@@ -19,10 +19,10 @@ def main():
     parser.add_argument('--browser', default=shutil.which('chromium') or shutil.which('google-chrome'))
     args=parser.parse_args()
     args.output.mkdir(parents=True,exist_ok=True)
-    ui=(ROOT/'index.html').read_text()
-    for key,value in {'WIDTH':'1920','HEIGHT':'1080','USER':'display','VERSION':'8.0.0','DEMO':'true','STREAM_URL':'about:blank'}.items():
+    ui=(ROOT/'web'/'index.html').read_text()
+    for key,value in {'WIDTH':'1920','HEIGHT':'1080','USER':'display','VERSION':(ROOT/'VERSION').read_text().strip(),'DEMO':'true','STREAM_URL':'about:blank'}.items():
         ui=ui.replace('__'+key+'__',value)
-    ui=ui.replace('src="about:blank"','srcdoc="'+html.escape((ROOT/'demo.html').read_text(),quote=True)+'"')
+    ui=ui.replace('src="about:blank"','srcdoc="'+html.escape((ROOT/'web'/'demo.html').read_text(),quote=True)+'"')
     mock='''
     window.fetch=async function(path){
       const health={ok:true,demo:true,width:1920,height:1080,fps:60,bitrate_kbps:6000,
@@ -50,7 +50,7 @@ def main():
             page.wait_for_timeout(350)
             return page
         login=browser.new_page(viewport={'width':1440,'height':960})
-        login.set_content((ROOT/'login.html').read_text().replace('__USER__','display').replace('__ERROR__',''))
+        login.set_content((ROOT/'web'/'login.html').read_text().replace('__USER__','display').replace('__ERROR__',''))
         login.screenshot(path=str(args.output/'login-desktop.png')); login.close()
         page=page_for(1440,960)
         assert page.locator('#statusText').inner_text()=='Demo'

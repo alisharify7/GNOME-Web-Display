@@ -12,7 +12,7 @@ import socket
 import subprocess
 import sys
 
-from settings import ROOT, ConfigError, Settings, load_settings
+from .settings import ROOT, ConfigError, Settings, load_settings
 
 
 @dataclass
@@ -57,9 +57,18 @@ def collect(cfg, demo=False, ports=True):
     def add(level, code, message, fix=''):
         result.append(Finding(level, code, message, fix))
 
-    for name in ('app.py', 'host.py', 'index.html', 'login.html', 'settings.py', 'security.py', 'input_protocol.py', 'demo.html', 'mediamtx.yml', 'setup.sh'):
+    required_files = (
+        'VERSION', 'start.sh', 'setup.sh', 'scripts/start.sh', 'scripts/setup.sh',
+        'src/gnome_web_display/__init__.py', 'src/gnome_web_display/paths.py',
+        'src/gnome_web_display/app.py', 'src/gnome_web_display/host.py',
+        'src/gnome_web_display/settings.py', 'src/gnome_web_display/security.py',
+        'src/gnome_web_display/input_protocol.py', 'src/gnome_web_display/launcher.py',
+        'web/index.html', 'web/login.html', 'web/demo.html', 'config/mediamtx.yml',
+    )
+    for name in required_files:
         if not (ROOT / name).is_file():
-            add('ERROR', 'file', f'Missing project file: {name}', 'Re-extract the complete release; do not copy only start.sh.')
+            add('ERROR', 'file', f'Missing project file: {name}',
+                'Re-extract the complete release; do not copy only start.sh.')
     add('OK' if sys.version_info >= (3, 11) else 'ERROR', 'python',
         f'Python {platform.python_version()} ({sys.executable})', 'Use Python 3.11+; Debian 13 provides it.')
     modules = ('aiohttp',) if demo else ('aiohttp', 'gi')

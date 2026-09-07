@@ -4,6 +4,26 @@ GNOME Web Display controls an already logged-in desktop. Treat access to its
 password, browser session, or host account as access to that desktop. This release
 has automated tests, not an independent security audit.
 
+## Installer and release trust
+
+`curl | bash` executes a downloaded script. Use only the trusted repository, or
+download and inspect `install.sh` first. A URL on `main` can change; a version-tagged
+URL pins a ref name, but Git tags can still be moved by a repository administrator.
+
+The installer compares the remote tag object and peeled commit discovered at the
+start with the fetched checkout, checks Git objects, and refuses dirty existing
+checkouts. v2 source checks also verify the bundled SHA-256 manifest. These checks
+detect inconsistency/corruption; they are not an independent publisher signature
+and do not protect against a compromised repository publishing matching hashes.
+No claim of signed-release verification is made.
+
+Clone-only never executes downloaded project scripts. Verify-only runs the selected
+release's read-only diagnostics and therefore still requires trusting its code.
+No automatic cross-version configuration/password copying, `git reset --hard`,
+system-service installation or Docker-group membership change is performed.
+Privileged package/service actions retain explicit consent; do not run the entire
+bootstrap with sudo. Do not put credentials in installer URLs or command arguments.
+
 ## Intended use
 
 Use it on your own GNOME Wayland host with devices and people you trust. It is not

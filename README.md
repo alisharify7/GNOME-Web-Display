@@ -4,13 +4,15 @@
 
 ### Your browser. An extra screen for Linux.
 
+**Version 2.0.0** · Interactive installer · Version selection · Organized source tree
+
 A **spacedesk-style alternative for GNOME on Wayland**: use a phone, tablet,
 laptop, or another computer as a browser-based extended display.
 
 **Virtual monitor · WebRTC video · System audio · Mouse & keyboard · No client app**
 
 [Get started](#get-started) · [Screenshots](#screenshots) · [Settings](#settings) ·
-[Troubleshooting](#troubleshooting) · [Developer guide](README-dev.md)
+[Troubleshooting](#troubleshooting) · [Developer guide](docs/DEVELOPMENT.md)
 
 </div>
 
@@ -52,6 +54,7 @@ protocol-compatible spacedesk client or a universal replacement for its features
 | Host desktop | A logged-in **GNOME Wayland** session with Mutter ScreenCast and RemoteDesktop APIs |
 | Baseline | **Debian 13 + GNOME 48** is the original project's target, not a claim of hardware certification for this release |
 | Installer | Debian/Ubuntu with APT; package availability and desktop compatibility still need checking |
+| Bootstrap | Bash 5+, Git and GNU coreutils; curl for the one-command entry |
 | Python | **3.11+**, with distribution packages for `aiohttp` and PyGObject (`gi`) |
 | Media | PipeWire, GStreamer, and Docker Engine **28+** for the bundled MediaMTX launcher |
 | Client | Start with a current Chrome/Chromium browser with WebRTC support; other browsers need validation |
@@ -68,80 +71,204 @@ Docker media delivery were **not** tested in the packaging environment. Details:
 
 ## Get started
 
-Download and extract the complete release. Open a terminal **inside your normal
-GNOME Wayland desktop**, then enter the extracted folder:
+Run in a terminal **inside your normal GNOME Wayland desktop**, as your own user.
+**Do not put `sudo` before the entire installer or `start.sh`.** The dependency
+installer and individual Docker operations may request administrator access.
+
+### One-command interactive installer
 
 ```bash
-git clone https://github.com/alisharify7/GNOME-Web-Display
-cd GNOME-Web-Display
-chmod +x setup.sh
-chmod +x start.sh
-./setup.sh
-./start.sh
+curl -fsSL https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/main/install.sh | bash
 ```
 
-**Do not run `sudo bash start.sh`.** The desktop process must run as your logged-in
-user. The installer or Docker commands may separately request administrator access.
+The URL must point to the **raw shell script**, not a GitHub HTML file page.
+This command downloads and executes code: use it only for a repository you trust.
+The `main` URL becomes available after the owner publishes this revision there.
+For a fixed bootstrap after the tag is published, replace `main` with `v2.0.0`.
 
-On startup, the launcher checks the project files, desktop session, Python modules,
-GStreamer elements, PipeWire, Docker, and required ports. If installable dependencies
-are missing, it offers the APT installer and shows the packages. Prompts default to
-**No**. Other errors explain what to fix rather than attempting unrelated changes.
+The installer reads version tags directly from Git, shows a menu, and clones the
+selected tag into its own directory. Enter an exact tag, a menu number, **`v1`**,
+**`v2`**, or **`latest`**. Only tags that actually exist are selectable.
 
-Choose the network interface reachable by the second device when prompted. Set a
-browser password of **8–1024 characters**; the default username is `display`.
-Open the URL printed in the terminal on your second device and sign in.
+- **`latest`** selects the numerically highest stable version tag, not `main` and
+  not GitHub's manually designated "Latest" release.
+- **`v1` / `v2`** select the highest stable version in that major series.
+- **`v2.0.0`** selects that exact tag. Prereleases require an explicit selection;
+  they are never chosen by `latest` or a major-series alias.
 
-For example, the printed address may look like:
+After choosing a version, select an action:
+
+```text
+1) Verify -> setup -> recheck -> start (recommended)
+2) Verify only (clone + read-only checks; no packages or server)
+3) Verify -> setup -> recheck (do not start)
+4) Verify -> start (never install application dependencies)
+5) Clone only (do not execute downloaded code)
+0) Cancel
+```
+
+For the recommended path, the installer checks the selected Git tag/commit,
+checks source integrity, runs `setup.sh --check` and `start.sh --doctor`, then
+runs `setup.sh` with its normal consent prompts. Missing dependencies before setup
+are reported rather than blocking their installation. **A failed setup, source
+check, or post-setup runtime check prevents the server from starting.**
+
+Menus, APT prompts, network selection, and password prompts use your actual
+terminal even when the installer is invoked with `curl | bash`. A terminal is
+still needed for interactive questions; piping `yes` is not a supported substitute.
+
+Installations are kept separately:
+
+```text
+~/.local/share/gnome-web-display/
+  versions/
+    v1.0.0/
+    v2.0.0/
+```
+
+A previously installed **clean** checkout of the same tag can be reused. Tracked
+source changes, unexpected untracked files, moved tags, and mismatching repositories
+are rejected; the installer does not use `git reset --hard` or overwrite your
+installation. Private `config.toml` / password files are not automatically copied
+between versions. Only run one live capture version at a time; media ports are shared.
+
+### Download and inspect the installer first
+
+```bash
+curl -fSL https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/main/install.sh -o install.sh
+less install.sh
+bash install.sh
+```
+
+This also lets you run the same installer again without downloading its code again.
+It still contacts Git for the current tag list. Bash 5+, Git and GNU coreutils are
+needed for the bootstrap. When Git is absent, the interactive installer can ask to
+install `git` and `ca-certificates` on an APT system; read-only/clone-only modes do
+not install missing bootstrap packages automatically.
+
+### Choose a version or action explicitly
+
+```bash
+# List published tags without cloning or executing project code.
+bash install.sh --list
+
+# Select the v2 series, then choose an action in the menu.
+bash install.sh --version v2
+
+# Clone the exact release; no downloaded script is executed.
+bash install.sh --version v2.0.0 --download-only
+
+# Clone and run source/package/runtime checks, without installing packages.
+bash install.sh --version latest --verify-only
+
+# Verify, install dependencies with normal prompts, and recheck; do not start.
+bash install.sh --version v2 --no-start
+
+# Change the base directory for side-by-side version checkouts.
+bash install.sh --version v2 --install-dir "$HOME/Applications/gnome-web-display"
+```
+
+Flags also work directly with curl:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/main/install.sh | bash -s -- --version v2
+```
+
+`--yes` is **explicit opt-in**, not the default. It approves package/service prompts,
+but does not create credentials or pick among ambiguous network interfaces.
+For unattended use, provide `--version`, `--action`, and an absolute `--config`
+pointing to settings with a private password file and the intended network address:
+
+```bash
+bash install.sh --version v2.0.0 --action all --yes --config "$HOME/.config/gnome-web-display/config.toml"
+```
+
+Without a controlling terminal, `sudo` must already be usable noninteractively or
+installation will fail. `--yes` alone defaults to `latest` plus the complete flow.
+Use `--help` or the [installer reference](docs/INSTALLER.md) for all options.
+
+### Or clone the release yourself
+
+After `v2.0.0` has been published:
+
+```bash
+git clone --branch v2.0.0 --depth 1 https://github.com/alisharify7/GNOME-Web-Display.git GNOME-Web-Display-v2.0.0
+cd GNOME-Web-Display-v2.0.0
+bash scripts/verify.sh --source-only
+bash setup.sh
+bash start.sh --doctor
+bash start.sh --no-install
+```
+
+You can also extract the complete release archive into a new directory and run
+those same commands from its root. To preview unpublished development code, clone
+`main` explicitly instead; it is not treated as a stable version by the installer.
+
+### Connect the second screen
+
+When starting the server, choose the network interface reachable by your second
+device and set a browser password of **8-1024 characters**. The default username is
+`display`. Open the URL printed in the terminal, for example:
 
 ```text
 http://192.168.1.20:8090
 ```
 
-Then open **Settings → Displays** on the host, arrange the new display, and drag a
-window onto it. Keep the host terminal open. Press **Ctrl+C in that terminal** to
-stop the server, release the virtual monitor, and remove this run's media container.
-Closing a browser tab does not stop the host.
+Sign in, then open **GNOME Settings -> Displays** on the host, arrange the new
+monitor and move a window onto it. Keep the host terminal open. **Ctrl+C in that
+terminal** stops the server, releases the virtual monitor and removes only this
+run's media container. Closing a browser tab does not stop the host.
 
-### Check the machine without changing it
+### Verify an extracted or cloned checkout
 
 ```bash
+# Source files + SHA-256 manifest + shell syntax; no packages, server or Python needed.
+bash scripts/verify.sh --source-only
+
+# Add read-only package/runtime diagnostics.
+bash scripts/verify.sh
+
+# Runtime diagnostics only; also available as JSON.
 bash start.sh --doctor
 bash start.sh --doctor --json
+
+# Distribution package audit only.
+bash setup.sh --check
 ```
 
-Diagnostics never install packages, invoke `sudo`, or modify system settings. They
-exit with status `1` for failed runtime checks (`2` for invalid arguments/configuration
-or bootstrap errors). Run them before starting the server;
-an already-running instance will correctly make the port checks fail.
+Checksums detect changes relative to the bundled manifest; they are **not an
+independent publisher signature**. The installer also compares the discovered
+remote tag object and commit with the fetched checkout before executing its code.
+Older v1 layouts use the Git checks and shell syntax checks rather than trusting
+historical packaging manifests. Verification can identify missing dependencies,
+unsupported sessions and port conflicts; it does not certify live streaming.
 
-### Installation options
+`--doctor` never installs packages or invokes `sudo`. Run diagnostics before
+starting the server; an already-running instance correctly makes port checks fail.
+It exits with status `1` for failed runtime checks and `2` for bootstrap/configuration
+errors. Installer verification returns nonzero when its checks fail.
+
+### Other startup options
 
 ```bash
-# Show missing distribution packages; do not install anything.
-bash setup.sh --check
-
-# Review and explicitly approve an interactive installation.
+# Review and explicitly approve an interactive dependency installation.
 bash setup.sh
 
-# Never offer package installation during startup.
+# Never offer dependency installation during startup.
 bash start.sh --no-install
 
-# Explicitly approve package/service prompts. Credentials still need to be provided.
+# Explicitly approve package/service prompts; credentials still need to be supplied.
 bash start.sh --yes
-```
 
-`--yes` is **not** the default. APT may start services or replace conflicting audio
-packages as part of its transaction. The scripts never add you to the Docker group,
-explicitly edit your firewall policy, or silently tune kernel settings. Docker itself
-creates network/firewall rules when it publishes container ports.
-
-The launcher uses a cached MediaMTX image when available. The first uncached run
-needs access to the container registry. To deliberately pull the configured image:
-
-```bash
+# Deliberately pull the configured MediaMTX image rather than using a cached copy.
 bash start.sh --update-image
 ```
+
+APT may enable services or replace conflicting audio packages; review its proposed
+transaction. The scripts do not add you to the Docker group, explicitly edit
+firewall policy, or silently tune kernel settings. Docker itself creates
+network/firewall rules when publishing ports. The first uncached MediaMTX run
+needs access to the container registry.
 
 ## Screenshots
 
@@ -222,7 +349,7 @@ to people and devices you trust. No client microphone permission is requested.
 No configuration file is required. To customize the defaults:
 
 ```bash
-cp config.example.toml config.toml
+cp config/config.example.toml config.toml
 ```
 
 Edit `config.toml` with a text editor. It is parsed as data, **never sourced as a
@@ -268,7 +395,7 @@ host's reachable LAN/VPN address. A loopback bind (`127.0.0.1`) prevents direct 
 access and is useful behind a local reverse proxy.
 
 The complete configuration and environment mapping is in the
-[developer guide](README-dev.md#configuration-reference).
+[developer guide](docs/DEVELOPMENT.md#configuration-reference).
 
 ### Credentials for unattended startup
 
@@ -336,7 +463,7 @@ tls_key = "/absolute/path/server.key"
 
 A self-signed certificate is not automatically trusted by a phone. A reverse-proxy
 example and the correct `public_origin` setting are in
-[the developer guide](README-dev.md#https-and-reverse-proxies).
+[the developer guide](docs/DEVELOPMENT.md#https-and-reverse-proxies).
 
 Read [SECURITY.md](SECURITY.md) for the trust model and limitations, including why
 signing out is not a guaranteed immediate cutoff of an already-established media
@@ -396,27 +523,51 @@ alternative streaming backend or a hardware compatibility test.
 
 ## Upgrade, stop, and remove
 
-Stop v7.1 before starting this release because the media ports are shared. Keep
-this package in a new directory, copy settings into `config.toml`, and retain the
-old folder until you have verified your desktop. Existing `VSCREEN_WIDTH`,
-`VSCREEN_HEIGHT`, `VSCREEN_FPS`, `VSCREEN_BITRATE`, `VSCREEN_AUDIO_SOURCE`,
-`VSCREEN_AUDIO_BITRATE`, `VSCREEN_USER`, and `VSCREEN_PASSWORD` overrides remain usable.
+Stop the previous live session before starting another version; media ports are
+shared. Run the installer again, select a newer tag and choose **Clone only** when
+you want to review or migrate settings before running setup/start. Each tag gets
+its own directory; there is no automatic in-place `git pull` or forced reset.
+
+Keep the old version until the new one works on your desktop. Copy only your
+needed settings into the new root-level `config.toml` and review relative paths to
+password/certificate files. Nothing copies secrets automatically. The same
+`VSCREEN_*` environment overrides remain supported. The default configuration
+example is now at `config/config.example.toml`; actual private `config.toml` stays
+at the project root for compatibility.
 
 A normal Ctrl+C/SIGTERM shutdown cleans up only this run's media container. A power
 failure or `kill -9` can leave a container behind; inspect its name and stop only
 the appropriate container manually. Other containers are never force-deleted.
 
-There is no autostart service. To remove the application, stop it and delete its
-folder and optional state logs/password file. Distribution dependencies and cached
-Docker images are intentionally not removed automatically because other apps may
-use them.
+There is no autostart service or global command installed. Start an installed
+version from its own directory with `bash start.sh`, or rerun the installer and
+choose the same tag plus **Verify -> start**. To remove a version, stop it first
+and delete only that version's directory and any separately chosen logs/secrets.
+Distribution dependencies and cached Docker images are not removed automatically
+because other applications may use them.
+
+## Project layout
+
+```text
+GNOME-Web-Display/
+  install.sh                 Standalone curl-friendly version/menu installer
+  start.sh / setup.sh        Stable, thin entry points
+  run.sh                     Compatibility alias for start.sh
+  VERSION                    Single source of truth: 2.0.0
+  src/gnome_web_display/     Python application, launcher, settings and diagnostics
+  web/                       Viewer, login and demo HTML/CSS/JavaScript
+  config/                    Configuration example and MediaMTX defaults
+  scripts/                   Launcher bootstrap, setup and read-only verifier
+  tests/                     Application and offline Git/installer tests
+  tools/                     Screenshot, demo smoke test and manifest tools
+  docs/                      Developer/installer guides, release notes and validation
+```
 
 ## Development and licensing
 
-See [README-dev.md](README-dev.md) for architecture, API, tests, and contribution
-notes, and [CHANGELOG.md](CHANGELOG.md) for the v8 changes.
-
-**Licensing needs an owner decision before public distribution.** The supplied
-v7.1 archive did not include a license, and this packaging pass does not choose one
-on the owner's behalf. Do not interpret a public repository as permission to reuse
-its code. See [LICENSE-NOTICE.md](LICENSE-NOTICE.md).
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for architecture, configuration, API
+and contribution notes; [docs/INSTALLER.md](docs/INSTALLER.md) for installer behavior;
+and [CHANGELOG.md](CHANGELOG.md) for the v2.0.0 changes.
+[docs/RELEASING.md](docs/RELEASING.md) describes publishing `main` and the version tag.
+The supplied repository's [LICENSE](LICENSE) is retained unchanged. Provenance and
+third-party notes are in [docs/LICENSE-NOTICE.md](docs/LICENSE-NOTICE.md).

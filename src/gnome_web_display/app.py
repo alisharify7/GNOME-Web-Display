@@ -19,9 +19,10 @@ try:
 except ImportError:
     raise SystemExit('ERROR: aiohttp is missing. Run bash setup.sh, or install python3-aiohttp for this Python interpreter.')
 
-from input_protocol import InputState
-from security import LoginLimiter, Sessions, constant_equal
-from settings import ROOT, VERSION, ConfigError, load_settings, read_password
+from .input_protocol import InputState
+from .security import LoginLimiter, Sessions, constant_equal
+from .paths import WEB_ROOT
+from .settings import VERSION, ConfigError, load_settings, read_password
 
 COOKIE = 'gwd_session'
 
@@ -100,7 +101,7 @@ async def login_handler(request):
             return response
         await asyncio.sleep(.2)
         error, status = 'Incorrect username or password.', 401
-    page = (ROOT / 'login.html').read_text(encoding='utf-8')
+    page = (WEB_ROOT / 'login.html').read_text(encoding='utf-8')
     page = page.replace('__USER__', html.escape(state.cfg.user, quote=True))
     page = page.replace('__ERROR__', f'<div class="error" role="alert">{html.escape(error)}</div>' if error else '')
     return web.Response(text=page, content_type='text/html', status=status)
@@ -122,7 +123,7 @@ async def index_handler(request):
     state = request.app[STATE]
     cfg = state.cfg
     url = '/demo-screen' if state.demo else f'/stream/{cfg.stream_name}/?controls=false&muted=true&autoplay=true&playsinline=true&disablepictureinpicture=true'
-    text = (ROOT / 'index.html').read_text(encoding='utf-8')
+    text = (WEB_ROOT / 'index.html').read_text(encoding='utf-8')
     for key, value in {'STREAM_URL': url, 'WIDTH': str(cfg.width), 'HEIGHT': str(cfg.height),
                        'USER': html.escape(cfg.user), 'DEMO': 'true' if state.demo else 'false',
                        'VERSION': VERSION}.items():
@@ -273,7 +274,7 @@ async def favicon_handler(request):
 async def demo_screen(request):
     if not request.app[STATE].demo:
         raise web.HTTPNotFound()
-    return web.Response(text=(ROOT / 'demo.html').read_text(encoding='utf-8'), content_type='text/html')
+    return web.Response(text=(WEB_ROOT / 'demo.html').read_text(encoding='utf-8'), content_type='text/html')
 
 
 async def expire_sockets(state):
@@ -290,7 +291,7 @@ async def resources(app):
     expiry = None
     try:
         if not state.demo:
-            import host
+            from . import host
             state.host = host
             host.initialize(state.cfg)
             threading.Thread(target=host.glib_loop_thread, daemon=True).start()

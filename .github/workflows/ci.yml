@@ -21,9 +21,12 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install 'aiohttp>=3.9,<4'
       - run: python -m compileall -q .
-      - run: for script in setup.sh start.sh run.sh; do bash -n "$script"; done
+      - run: for script in install.sh setup.sh start.sh run.sh scripts/*.sh; do bash -n "$script"; done
+      - run: python tools/manifest.py --check
+      - run: bash scripts/verify.sh --source-only
       - run: python -m unittest discover -s tests -v
       - run: python tools/smoke_demo.py
+      - run: python tools/smoke_installer.py
 
   ui-preview:
     runs-on: ubuntu-latest

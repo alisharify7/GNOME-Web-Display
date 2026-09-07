@@ -14,8 +14,9 @@ import time
 import urllib.error
 import urllib.request
 
-from doctor import collect, command, docker_version_issue, print_report
-from settings import ROOT, VERSION, ConfigError, load_settings, read_password
+from .paths import CONFIG_ROOT
+from .doctor import collect, command, docker_version_issue, print_report
+from .settings import ROOT, VERSION, ConfigError, load_settings, read_password
 
 
 class LaunchError(RuntimeError):
@@ -207,7 +208,7 @@ def main():
             # Create first, so even interrupted starts can clean up ONLY this instance.
             cmd = docker + ['create', '--name', name, '--label', 'app=gnome-web-display',
                 '--cap-drop=ALL', '--security-opt', 'no-new-privileges:true',
-                '--mount', f'type=bind,src={ROOT / "mediamtx.yml"},dst=/mediamtx.yml,readonly',
+                '--mount', f'type=bind,src={CONFIG_ROOT / "mediamtx.yml"},dst=/mediamtx.yml,readonly',
                 '-e', f'MTX_WEBRTCADDITIONALHOSTS={advertised}',
                 '-p', '127.0.0.1:8554:8554/tcp', '-p', '127.0.0.1:8889:8889/tcp',
                 '-p', '8189:8189/udp', cfg.mediamtx_image, '/mediamtx.yml']
@@ -222,7 +223,7 @@ def main():
         print(f'\nStarting server. Browser URL: {url}\nUsername: {cfg.user}', flush=True)
         if not cfg.tls_cert and not cfg.public_origin.startswith('https:'):
             print('WARNING: HTTP does not protect your password/input on the network. Use only a trusted LAN or an encrypted VPN.', flush=True)
-        child_args = [sys.executable, '-u', str(ROOT / 'app.py')]
+        child_args = [sys.executable, '-u', '-m', 'gnome_web_display.app']
         if args.config:
             child_args += ['--config', str(Path(args.config).resolve())]
         if args.demo:

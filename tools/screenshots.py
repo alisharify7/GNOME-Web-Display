@@ -30,7 +30,8 @@ def main():
     password = secrets.token_urlsafe(24)
     env = {k: v for k, v in os.environ.items() if not k.startswith('VSCREEN_')}
     env.update(VSCREEN_PASSWORD=password, VSCREEN_HTTP_PORT=str(port), VSCREEN_USER='display')
-    server = subprocess.Popen([sys.executable, 'app.py', '--demo'], cwd=ROOT, env=env,
+    env['PYTHONPATH'] = str(ROOT / 'src') + os.pathsep + env.get('PYTHONPATH', '')
+    server = subprocess.Popen([sys.executable, '-m', 'gnome_web_display.app', '--demo'], cwd=ROOT, env=env,
                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     origin = f'http://127.0.0.1:{port}'
     errors = []

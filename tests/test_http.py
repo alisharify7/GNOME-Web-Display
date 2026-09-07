@@ -1,9 +1,10 @@
+import _bootstrap  # noqa: F401
 import asyncio
 import unittest
 from aiohttp import CookieJar, WSMsgType
 from aiohttp.test_utils import TestClient, TestServer
-from app import STATE, allowed_proxy_path, create_app, rewrite_location
-from settings import Settings
+from gnome_web_display.app import STATE, allowed_proxy_path, create_app, rewrite_location
+from gnome_web_display.settings import Settings
 
 
 class HTTPTests(unittest.IsolatedAsyncioTestCase):

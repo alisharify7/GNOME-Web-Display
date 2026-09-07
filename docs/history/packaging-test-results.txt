@@ -1,4 +1,7 @@
-=== Unit / API / installer / layout tests ===
+GNOME Web Display 8.0.0 - packaging validation, 2026-09-07
+Scope and limitations: docs/TESTING.md
+
+=== UNIT AND HTTP TESTS ===
 test_audio_list_tabs (test_core.HostTests.test_audio_list_tabs) ... ok
 test_auto_no_audio_fallback (test_core.HostTests.test_auto_no_audio_fallback) ... ok
 test_explicit_missing_source (test_core.HostTests.test_explicit_missing_source) ... ok
@@ -61,46 +64,6 @@ test_allowed_resources (test_http.ProxyTests.test_allowed_resources) ... ok
 test_disallowed_resources (test_http.ProxyTests.test_disallowed_resources) ... ok
 test_external_location_rejected (test_http.ProxyTests.test_external_location_rejected) ... ok
 test_location_rewrite (test_http.ProxyTests.test_location_rewrite) ... ok
-test_broken_downloaded_shell_syntax_blocks_execution (test_installer.InstallerTests.test_broken_downloaded_shell_syntax_blocks_execution) ... ok
-test_clone_only_does_not_execute_new_verifier (test_installer.InstallerTests.test_clone_only_does_not_execute_new_verifier) ... ok
-test_config_path_with_spaces_and_demo_are_forwarded (test_installer.InstallerTests.test_config_path_with_spaces_and_demo_are_forwarded) ... ok
-test_dirty_checkout_not_overwritten (test_installer.InstallerTests.test_dirty_checkout_not_overwritten) ... ok
-test_empty_tag_list_gives_actionable_error (test_installer.InstallerTests.test_empty_tag_list_gives_actionable_error) ... ok
-test_exact_old_version_is_not_upgraded (test_installer.InstallerTests.test_exact_old_version_is_not_upgraded) ... ok
-test_existing_clean_checkout_reused_and_config_preserved (test_installer.InstallerTests.test_existing_clean_checkout_reused_and_config_preserved) ... ok
-test_existing_non_git_directory_is_preserved (test_installer.InstallerTests.test_existing_non_git_directory_is_preserved) ... ok
-test_explicit_yes_defaults_to_latest_and_all (test_installer.InstallerTests.test_explicit_yes_defaults_to_latest_and_all) ... ok
-test_failed_clone_cleans_only_staging (test_installer.InstallerTests.test_failed_clone_cleans_only_staging) ... ok
-test_failed_post_setup_doctor_does_not_start (test_installer.InstallerTests.test_failed_post_setup_doctor_does_not_start) ... ok
-test_failed_setup_does_not_start (test_installer.InstallerTests.test_failed_setup_does_not_start) ... ok
-test_help_does_not_need_network (test_installer.InstallerTests.test_help_does_not_need_network) ... ok
-test_latest_clone_only_runs_no_downloaded_code (test_installer.InstallerTests.test_latest_clone_only_runs_no_downloaded_code) ... ok
-test_list_numeric_sort_and_exclude_prerelease_from_latest (test_installer.InstallerTests.test_list_numeric_sort_and_exclude_prerelease_from_latest) ... ok
-test_major_v1_resolves_annotated_tag (test_installer.InstallerTests.test_major_v1_resolves_annotated_tag) ... ok
-test_major_v2_uses_numeric_order (test_installer.InstallerTests.test_major_v2_uses_numeric_order) ... ok
-test_missing_dependencies_do_not_block_setup (test_installer.InstallerTests.test_missing_dependencies_do_not_block_setup) ... ok
-test_new_layout_source_verifier_is_mandatory (test_installer.InstallerTests.test_new_layout_source_verifier_is_mandatory) ... ok
-test_no_start_action (test_installer.InstallerTests.test_no_start_action) ... ok
-test_noninteractive_setup_requires_explicit_consent (test_installer.InstallerTests.test_noninteractive_setup_requires_explicit_consent) ... ok
-test_only_prereleases_have_no_implicit_latest (test_installer.InstallerTests.test_only_prereleases_have_no_implicit_latest) ... ok
-test_pipe_menu_and_child_prompts_use_controlling_terminal (test_installer.InstallerTests.test_pipe_menu_and_child_prompts_use_controlling_terminal) ... ok
-test_prerelease_can_be_selected_explicitly (test_installer.InstallerTests.test_prerelease_can_be_selected_explicitly) ... ok
-test_root_install_is_rejected (test_installer.InstallerTests.test_root_install_is_rejected) ... ok
-test_server_exit_code_is_preserved (test_installer.InstallerTests.test_server_exit_code_is_preserved) ... ok
-test_start_action_never_calls_setup (test_installer.InstallerTests.test_start_action_never_calls_setup) ... ok
-test_symlink_destination_rejected (test_installer.InstallerTests.test_symlink_destination_rejected) ... ok
-test_tag_branch_name_collision_selects_the_tag (test_installer.InstallerTests.test_tag_branch_name_collision_selects_the_tag) ... ok
-test_tag_changed_between_discovery_and_clone_is_rejected (test_installer.InstallerTests.test_tag_changed_between_discovery_and_clone_is_rejected) ... ok
-test_tag_retargeting_does_not_silently_replace_existing_version (test_installer.InstallerTests.test_tag_retargeting_does_not_silently_replace_existing_version) ... ok
-test_unknown_arguments_fail (test_installer.InstallerTests.test_unknown_arguments_fail) ... ok
-test_unprefixed_request_finds_prefixed_tag (test_installer.InstallerTests.test_unprefixed_request_finds_prefixed_tag) ... ok
-test_unprefixed_tag_sorts_with_prefixed_tags (test_installer.InstallerTests.test_unprefixed_tag_sorts_with_prefixed_tags) ... ok
-test_unpublished_major_fails_without_cloning (test_installer.InstallerTests.test_unpublished_major_fails_without_cloning) ... ok
-test_unsafe_version_is_not_executed (test_installer.InstallerTests.test_unsafe_version_is_not_executed) ... ok
-test_untracked_code_not_executed (test_installer.InstallerTests.test_untracked_code_not_executed) ... ok
-test_verify_failure_remains_nonzero (test_installer.InstallerTests.test_verify_failure_remains_nonzero) ... ok
-test_verify_runs_checks_but_not_setup_or_start (test_installer.InstallerTests.test_verify_runs_checks_but_not_setup_or_start) ... ok
-test_version_installations_are_separate (test_installer.InstallerTests.test_version_installations_are_separate) ... ok
 test_ambiguous_noninteractive_network_fails (test_launcher.LauncherTests.test_ambiguous_noninteractive_network_fails) ... ok
 test_engine_query_failure_is_error (test_launcher.LauncherTests.test_engine_query_failure_is_error) ... ok
 test_explicit_address_skips_discovery (test_launcher.LauncherTests.test_explicit_address_skips_discovery) ... ok
@@ -114,33 +77,31 @@ test_noninteractive_consent_defaults_no (test_launcher.LauncherTests.test_nonint
 test_old_engine_rejected (test_launcher.LauncherTests.test_old_engine_rejected) ... ok
 test_privileged_engine_is_checked (test_launcher.LauncherTests.test_privileged_engine_is_checked) ... ok
 test_unknown_engine_rejected (test_launcher.LauncherTests.test_unknown_engine_rejected) ... ok
-test_all_moved_files_exist (test_layout.LayoutTests.test_all_moved_files_exist) ... ok
-test_doctor_resolves_new_files (test_layout.LayoutTests.test_doctor_resolves_new_files) ... ok
-test_package_roots (test_layout.LayoutTests.test_package_roots) ... ok
-test_root_no_longer_contains_application_implementations (test_layout.LayoutTests.test_root_no_longer_contains_application_implementations) ... ok
-test_run_wrapper_preserves_version_flag (test_layout.LayoutTests.test_run_wrapper_preserves_version_flag) ... ok
-test_start_wrapper_works_from_another_directory (test_layout.LayoutTests.test_start_wrapper_works_from_another_directory) ... ok
-test_version_has_one_source_of_truth (test_layout.LayoutTests.test_version_has_one_source_of_truth) ... ok
 
 ----------------------------------------------------------------------
-Ran 120 tests in 7.459s
+Ran 73 tests in 0.619s
 
 OK
 Network: wlan0 -> 192.0.2.2
 
-
-=== Direct demo launcher + HTTP smoke ===
+=== REAL DEMO LAUNCH SMOKE ===
 PASS: start.sh --demo --no-install, real HTTP login/session/logout and demo health.
 PASS: SIGTERM cleanup returns 130 and closes the HTTP listener. No desktop or Docker was used.
 
+=== CLI CHECKS ===
+PASS: version entrypoint
+PASS: help entrypoint
+PASS: JSON requires doctor
+PASS: missing config returns actionable failure
+PASS: missing Python does not install during doctor
+PASS: invalid environment setting fails early
+PASS: demo diagnostics are JSON and pass in this environment
+PASS: real-host diagnostics fail on absent GNOME instead of starting
+PASS: installer check lists missing packages without installing
+PASS: noninteractive installation requires explicit approval
+PASS: missing password has an actionable noninteractive error
 
-=== Actual-source installer + HTTP smoke ===
-PASS: actual v2.0.0 source -> local Git annotated tag -> installer clone -> manifest -> demo startup.
-PASS: installed HTTP login and versioned demo health; SIGTERM exit 130 and listener cleanup.
-PASS: verifier rejects changed frontend source. No public network, APT, Docker or GNOME capture used.
-
-
-=== Offline browser UI checks ===
+=== OFFLINE UI PREVIEW CHECKS ===
 PASS: actual UI rendered offline with explicit demo/mock data.
 PASS: desktop + mobile layouts, Focus toggle/drag, fullscreen Focus, keyboard, release-on-pause, widths 320/360/390/430/768.
 PASS: no uncaught JavaScript errors. Six UI previews written; no live GNOME/MediaMTX session was used.

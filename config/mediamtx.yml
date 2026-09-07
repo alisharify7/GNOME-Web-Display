@@ -1,4 +1,4 @@
-# MediaMTX 1.21.x. Mounted read-only by launcher.py (unlike v7.1).
+# MediaMTX 1.21.x. Mounted read-only by src/gnome_web_display/launcher.py.
 # Requires Docker Engine 28+ for localhost publishing isolation.
 # Host mappings, not these container-side addresses, restrict TCP listeners.
 logLevel: info

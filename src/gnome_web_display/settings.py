@@ -8,8 +8,7 @@ import re
 import stat
 import tomllib
 
-ROOT = Path(__file__).resolve().parent
-VERSION = '8.0.0'
+from .paths import ROOT, VERSION
 
 
 class ConfigError(ValueError):

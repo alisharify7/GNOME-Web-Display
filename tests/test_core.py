@@ -1,3 +1,4 @@
+import _bootstrap  # noqa: F401
 import math
 import os
 from pathlib import Path
@@ -5,10 +6,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from input_protocol import InputState
-from security import LoginLimiter, Sessions, constant_equal
-from settings import ConfigError, Settings, load_settings, read_password
-import host
+from gnome_web_display.input_protocol import InputState
+from gnome_web_display.security import LoginLimiter, Sessions, constant_equal
+from gnome_web_display.settings import ConfigError, Settings, load_settings, read_password
+from gnome_web_display import host
 
 
 class SettingsTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 # Screenshot provenance
 
-All six committed PNGs are browser-rendered captures of this repository's actual
+All six committed PNGs (regenerated for v2.0.0) are browser-rendered captures of this repository's actual
 HTML/CSS/JavaScript. They were produced with `tools/render_preview.py` using
 headless Chromium and Playwright. They were not generated with an image model and
 are not photographs of physical devices.
@@ -8,12 +8,12 @@ are not photographs of physical devices.
 The host environment had no usable GNOME Wayland session or physical phone.
 Browser navigation to localhost was also blocked by an environment policy. The
 policy was not changed or bypassed: the preview renderer uses `page.set_content`
-with the real UI, a `srcdoc` containing `demo.html`, and explicit mock health and
+with the real UI, a `srcdoc` containing `web/demo.html`, and explicit mock health and
 WebSocket responses. It does not navigate to a server or contact MediaMTX.
 
 Every display preview visibly identifies itself as a Demo. The sample workspace
 inside the virtual display is HTML/CSS demonstration content, not a captured
-Linux desktop. The login image is only a render of `login.html`; it is not evidence
+Linux desktop. The login image is only a render of `web/login.html`; it is not evidence
 of authentication. Real authentication is covered separately by HTTP tests.
 
 | File | Viewport | What it shows |
