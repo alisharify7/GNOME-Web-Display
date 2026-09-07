@@ -72,8 +72,12 @@ Download and extract the complete release. Open a terminal **inside your normal
 GNOME Wayland desktop**, then enter the extracted folder:
 
 ```bash
-cd gnome-web-display-v8.0.0
-bash start.sh
+git clone https://github.com/alisharify7/GNOME-Web-Display
+cd GNOME-Web-Display
+chmod +x setup.sh
+chmod +x start.sh
+./setup.sh
+./start.sh
 ```
 
 **Do not run `sudo bash start.sh`.** The desktop process must run as your logged-in
