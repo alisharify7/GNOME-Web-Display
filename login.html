@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GNOME Web Display Login</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:#070a0f;color:#eef3f8;font-family:system-ui,sans-serif}
+.box{width:min(400px,calc(100vw - 32px));padding:30px;border:1px solid #25303d;border-radius:22px;background:#0e141d;box-shadow:0 30px 70px #0008}
+.logo{width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,#5f8fff,#66e3c4);display:grid;place-items:center;color:#071018;font-weight:900;font-size:23px}
+h1{font-size:22px;margin:18px 0 6px}p{color:#9aa8b7;font-size:13px;margin:0 0 22px;line-height:1.5}label{font-size:12px;color:#aab7c5;display:block;margin:12px 0 6px}
+input{width:100%;height:44px;border:1px solid #2c3948;border-radius:11px;background:#090e15;color:white;padding:0 12px;outline:none}input:focus{border-color:#67a7ff}
+button{margin-top:18px;width:100%;height:44px;border:0;border-radius:11px;background:#67a7ff;color:#08111c;font-weight:800;cursor:pointer}
+.error{color:#ff7b7b;font-size:12px;margin-top:12px}.note{margin-top:18px;color:#6f7d8c;font-size:11px;line-height:1.5}
+</style></head><body><form class="box" method="post">
+<div class="logo">G</div><h1>GNOME Web Display</h1><p>Sign in to use this virtual monitor.</p>
+<label for="username">Username</label><input id="username" name="username" value="__USER__" autocomplete="username" required autofocus>
+<label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>
+__ERROR__<button type="submit">Connect</button>
+<div class="note">Password protection is enabled. Use only your own trusted devices. HTTP does not encrypt sign-in or remote input; use HTTPS or an encrypted VPN on untrusted networks.</div>
+</form></body></html>

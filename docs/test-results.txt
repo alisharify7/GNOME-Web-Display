@@ -1,0 +1,107 @@
+GNOME Web Display 8.0.0 - packaging validation, 2026-09-07
+Scope and limitations: docs/TESTING.md
+
+=== UNIT AND HTTP TESTS ===
+test_audio_list_tabs (test_core.HostTests.test_audio_list_tabs) ... ok
+test_auto_no_audio_fallback (test_core.HostTests.test_auto_no_audio_fallback) ... ok
+test_explicit_missing_source (test_core.HostTests.test_explicit_missing_source) ... ok
+test_off_never_enumerates (test_core.HostTests.test_off_never_enumerates) ... ok
+test_pipeline_audio (test_core.HostTests.test_pipeline_audio) ... ok
+test_pipeline_video_only (test_core.HostTests.test_pipeline_video_only) ... ok
+test_clamped_coordinates (test_core.InputTests.test_clamped_coordinates) ... ok
+test_invalid_down (test_core.InputTests.test_invalid_down) ... ok
+test_nan_and_infinity (test_core.InputTests.test_nan_and_infinity) ... ok
+test_non_object (test_core.InputTests.test_non_object) ... ok
+test_release_keys_and_buttons (test_core.InputTests.test_release_keys_and_buttons) ... ok
+test_text_limit (test_core.InputTests.test_text_limit) ... ok
+test_unicode_text (test_core.InputTests.test_unicode_text) ... ok
+test_unknown_type (test_core.InputTests.test_unknown_type) ... ok
+test_bounded_sessions (test_core.SecurityTests.test_bounded_sessions) ... ok
+test_distinct_sessions_and_revocation (test_core.SecurityTests.test_distinct_sessions_and_revocation) ... ok
+test_limiter (test_core.SecurityTests.test_limiter) ... ok
+test_limiter_bounded (test_core.SecurityTests.test_limiter_bounded) ... ok
+test_session_expiry (test_core.SecurityTests.test_session_expiry) ... ok
+test_unicode_passwords (test_core.SecurityTests.test_unicode_passwords) ... ok
+test_booleans_not_numbers (test_core.SettingsTests.test_booleans_not_numbers) ... ok
+test_defaults (test_core.SettingsTests.test_defaults) ... ok
+test_empty_password_rejected (test_core.SettingsTests.test_empty_password_rejected) ... ok
+test_environment_override (test_core.SettingsTests.test_environment_override) ... ok
+test_even_dimensions (test_core.SettingsTests.test_even_dimensions) ... ok
+test_invalid_number (test_core.SettingsTests.test_invalid_number) ... ok
+test_invalid_ranges (test_core.SettingsTests.test_invalid_ranges) ... ok
+test_missing_config (test_core.SettingsTests.test_missing_config) ... ok
+test_origin_accepted (test_core.SettingsTests.test_origin_accepted) ... ok
+test_origin_validation (test_core.SettingsTests.test_origin_validation) ... ok
+test_password_precedence (test_core.SettingsTests.test_password_precedence) ... ok
+test_private_password_file (test_core.SettingsTests.test_private_password_file) ... ok
+test_reserved_port (test_core.SettingsTests.test_reserved_port) ... ok
+test_stream_validation (test_core.SettingsTests.test_stream_validation) ... ok
+test_tls_pair (test_core.SettingsTests.test_tls_pair) ... ok
+test_toml_overrides_and_relative_file (test_core.SettingsTests.test_toml_overrides_and_relative_file) ... ok
+test_unknown_and_malformed_toml (test_core.SettingsTests.test_unknown_and_malformed_toml) ... ok
+test_bad_login (test_http.HTTPTests.test_bad_login) ... ok
+test_body_limit (test_http.HTTPTests.test_body_limit) ... /opt/pyvenv/lib/python3.13/site-packages/aiohttp/web_protocol.py:528: DeprecationWarning: returning HTTPException object is deprecated (#2415) and will be removed, please raise the exception instead
+  warnings.warn(
+ok
+test_cookie_flags (test_http.HTTPTests.test_cookie_flags) ... ok
+test_cross_origin_rejected (test_http.HTTPTests.test_cross_origin_rejected) ... ok
+test_demo_audio_disabled (test_http.HTTPTests.test_demo_audio_disabled) ... ok
+test_demo_health_not_fake_streaming (test_http.HTTPTests.test_demo_health_not_fake_streaming) ... ok
+test_get_logout_disabled (test_http.HTTPTests.test_get_logout_disabled) ... ok
+test_index_redirects (test_http.HTTPTests.test_index_redirects) ... ok
+test_login_page (test_http.HTTPTests.test_login_page) ... ok
+test_logout_closes_socket (test_http.HTTPTests.test_logout_closes_socket) ... ok
+test_logout_revokes_cookie (test_http.HTTPTests.test_logout_revokes_cookie) ... ok
+test_origin_required (test_http.HTTPTests.test_origin_required) ... ok
+test_protected_endpoints (test_http.HTTPTests.test_protected_endpoints) ... ok
+test_rate_limit (test_http.HTTPTests.test_rate_limit) ... ok
+test_rendered_index (test_http.HTTPTests.test_rendered_index) ... ok
+test_server_expiry (test_http.HTTPTests.test_server_expiry) ... ok
+test_unicode_login (test_http.HTTPTests.test_unicode_login) ... ok
+test_websocket_bad_json (test_http.HTTPTests.test_websocket_bad_json) ... ok
+test_websocket_ping (test_http.HTTPTests.test_websocket_ping) ... ok
+test_allowed_resources (test_http.ProxyTests.test_allowed_resources) ... ok
+test_disallowed_resources (test_http.ProxyTests.test_disallowed_resources) ... ok
+test_external_location_rejected (test_http.ProxyTests.test_external_location_rejected) ... ok
+test_location_rewrite (test_http.ProxyTests.test_location_rewrite) ... ok
+test_ambiguous_noninteractive_network_fails (test_launcher.LauncherTests.test_ambiguous_noninteractive_network_fails) ... ok
+test_engine_query_failure_is_error (test_launcher.LauncherTests.test_engine_query_failure_is_error) ... ok
+test_explicit_address_skips_discovery (test_launcher.LauncherTests.test_explicit_address_skips_discovery) ... ok
+test_explicit_yes_allows_consent (test_launcher.LauncherTests.test_explicit_yes_allows_consent) ... ok
+test_interface_filter (test_launcher.LauncherTests.test_interface_filter) ... ok
+test_modern_engine_accepted (test_launcher.LauncherTests.test_modern_engine_accepted) ... ok
+test_modern_engine_passes (test_launcher.LauncherTests.test_modern_engine_passes) ... ok
+test_no_shell_command_execution (test_launcher.LauncherTests.test_no_shell_command_execution) ... ok
+test_no_usable_network_fails (test_launcher.LauncherTests.test_no_usable_network_fails) ... ok
+test_noninteractive_consent_defaults_no (test_launcher.LauncherTests.test_noninteractive_consent_defaults_no) ... ok
+test_old_engine_rejected (test_launcher.LauncherTests.test_old_engine_rejected) ... ok
+test_privileged_engine_is_checked (test_launcher.LauncherTests.test_privileged_engine_is_checked) ... ok
+test_unknown_engine_rejected (test_launcher.LauncherTests.test_unknown_engine_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 73 tests in 0.619s
+
+OK
+Network: wlan0 -> 192.0.2.2
+
+=== REAL DEMO LAUNCH SMOKE ===
+PASS: start.sh --demo --no-install, real HTTP login/session/logout and demo health.
+PASS: SIGTERM cleanup returns 130 and closes the HTTP listener. No desktop or Docker was used.
+
+=== CLI CHECKS ===
+PASS: version entrypoint
+PASS: help entrypoint
+PASS: JSON requires doctor
+PASS: missing config returns actionable failure
+PASS: missing Python does not install during doctor
+PASS: invalid environment setting fails early
+PASS: demo diagnostics are JSON and pass in this environment
+PASS: real-host diagnostics fail on absent GNOME instead of starting
+PASS: installer check lists missing packages without installing
+PASS: noninteractive installation requires explicit approval
+PASS: missing password has an actionable noninteractive error
+
+=== OFFLINE UI PREVIEW CHECKS ===
+PASS: actual UI rendered offline with explicit demo/mock data.
+PASS: desktop + mobile layouts, Focus toggle/drag, fullscreen Focus, keyboard, release-on-pause, widths 320/360/390/430/768.
+PASS: no uncaught JavaScript errors. Six UI previews written; no live GNOME/MediaMTX session was used.

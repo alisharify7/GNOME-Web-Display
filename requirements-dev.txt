@@ -1,0 +1,4 @@
+# Use /usr/bin/python3 + distribution packages for the real GNOME host.
+# These packages are for portable tests and demo/screenshot development only.
+aiohttp>=3.9,<4
+playwright>=1.49,<2

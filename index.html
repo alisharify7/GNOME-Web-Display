@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080c12">
+<title>GNOME Web Display</title>
+<meta name="description" content="A browser-based second monitor for GNOME Wayland.">
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#070a0f;
+  --panel:rgba(12,17,24,.88);
+  --panel2:rgba(17,23,33,.96);
+  --border:rgba(255,255,255,.12);
+  --text:#eef3f8;
+  --muted:#96a5b5;
+  --good:#45d483;
+  --warn:#ffc85a;
+  --bad:#ff6868;
+  --accent:#6aa8ff;
+  --accent2:#6be2c7;
+  --shadow:0 22px 65px rgba(0,0,0,.48);
+}
+* { box-sizing:border-box; }
+html,body { margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+button,input { font:inherit; }
+#stage { position:fixed;inset:0;background:#000;touch-action:none;user-select:none; }
+#video { position:absolute;inset:0;width:100%;height:100%;border:0;background:#000;pointer-events:none; }
+#capture { position:absolute;inset:0;z-index:2;outline:none;cursor:none;touch-action:none; }
+
+.glass { background:var(--panel);border:1px solid var(--border);backdrop-filter:blur(18px);box-shadow:var(--shadow); }
+#topbar { position:absolute;top:12px;left:12px;right:12px;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:none;transition:.18s ease; }
+.brand,.controls { pointer-events:auto;display:flex;align-items:center;gap:8px;border-radius:15px;padding:8px 10px; }
+.logo { width:29px;height:29px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#071018;font-weight:900; }
+.brand-title { font-size:14px;font-weight:800;line-height:1.1; }
+.brand-sub { font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap; }
+.status-pill { display:flex;align-items:center;gap:7px;margin-left:4px;padding:7px 9px;border-radius:10px;background:rgba(255,255,255,.05);font-size:12px;color:var(--muted); }
+.dot { width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 3px rgba(255,200,90,.13); }
+.dot.good { background:var(--good);box-shadow:0 0 0 3px rgba(69,212,131,.13); }
+.dot.bad { background:var(--bad);box-shadow:0 0 0 3px rgba(255,104,104,.13); }
+.icon-btn { border:1px solid var(--border);background:rgba(255,255,255,.055);color:var(--text);height:35px;min-width:35px;padding:0 10px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer; }
+.icon-btn:hover { background:rgba(255,255,255,.11); }
+.icon-btn:active { transform:translateY(1px); }
+.icon-btn.active { border-color:rgba(106,168,255,.7);background:rgba(106,168,255,.18); }
+
+#dashboard { position:absolute;top:70px;right:12px;z-index:22;width:min(355px,calc(100vw - 24px));border-radius:17px;overflow:hidden;pointer-events:auto;transition:.18s ease; }
+#dashboard.hidden { opacity:0;transform:translateY(-8px) scale(.98);pointer-events:none; }
+.dash-head { display:flex;align-items:center;justify-content:space-between;padding:13px 14px 11px;border-bottom:1px solid var(--border); }
+.dash-title { font-size:13px;font-weight:800; }.dash-caption{font-size:11px;color:var(--muted);margin-top:2px;}
+.grid { display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px; }
+.card { min-height:72px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px; }
+.card.full { grid-column:1/-1; }
+.label { color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em; }
+.value { margin-top:6px;font-size:18px;font-weight:780;letter-spacing:-.02em; }.value.small{font-size:13px;word-break:break-all;}
+.subvalue { margin-top:4px;color:var(--muted);font-size:11px; }
+.connection-row { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;font-size:12px; }
+.mini-status { display:flex;align-items:center;gap:7px; }
+.volume-row { display:flex;align-items:center;gap:9px;margin-top:9px; }.volume-row input{width:100%;accent-color:var(--accent);}
+kbd { border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.06);padding:2px 5px;border-radius:5px;font-size:10px;color:var(--muted); }
+
+#keyboardPanel { position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:30;width:min(980px,calc(100vw - 18px));padding:10px;border-radius:18px;pointer-events:auto;transition:.18s ease; }
+#keyboardPanel.hidden { opacity:0;transform:translate(-50%,14px);pointer-events:none; }
+.kb-head { display:flex;align-items:center;gap:8px;margin-bottom:9px; }
+#mobileInput { flex:1;min-width:0;height:38px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.055);color:var(--text);padding:0 11px;outline:none; }
+#mobileInput:focus { border-color:rgba(106,168,255,.75); }
+.kb-row { display:flex;gap:5px;margin-top:5px; }
+.key { flex:1;min-width:33px;height:39px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.055);color:var(--text);cursor:pointer;font-size:12px;padding:0 5px; }
+.key:hover { background:rgba(255,255,255,.12); }.key.active{background:rgba(106,168,255,.25);border-color:var(--accent);}.key.wide{flex:1.6}.key.space{flex:5}.key.enter{flex:2}
+
+#hint { position:absolute;left:50%;bottom:14px;z-index:15;transform:translateX(-50%);padding:8px 11px;border-radius:10px;background:rgba(8,12,18,.72);border:1px solid var(--border);backdrop-filter:blur(10px);font-size:12px;color:#dbe5ef;pointer-events:none;transition:.2s ease; }
+#hint.fade { opacity:0; }
+#toast { position:absolute;left:50%;top:18px;z-index:60;transform:translate(-50%,-10px);opacity:0;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:rgba(9,13,19,.95);font-size:12px;pointer-events:none;transition:.18s ease; }
+#toast.show { opacity:1;transform:translate(-50%,0); }
+
+/* Focus mode: everything disappears except the draggable focus button. */
+body.focus-mode #topbar,body.focus-mode #dashboard,body.focus-mode #keyboardPanel,body.focus-mode #hint { opacity:0!important;pointer-events:none!important;transform:translateY(-8px); }
+#focusFab { position:absolute;z-index:80;width:48px;height:48px;border:1px solid rgba(255,255,255,.18);border-radius:15px;background:rgba(11,16,23,.72);color:#fff;backdrop-filter:blur(12px);box-shadow:0 12px 38px rgba(0,0,0,.4);display:grid;place-items:center;cursor:grab;touch-action:none;user-select:none;transition:background .15s ease,opacity .15s ease; }
+#focusFab:hover { background:rgba(20,28,39,.9); } #focusFab.dragging{cursor:grabbing;transition:none;} body.focus-mode #focusFab{background:rgba(8,12,18,.38);opacity:.72;} body.focus-mode #focusFab:hover{opacity:1;background:rgba(8,12,18,.78)}
+#focusFab .focus-icon { font-size:19px;pointer-events:none; } #focusFab .focus-mini { position:absolute;bottom:3px;font-size:7px;letter-spacing:.03em;color:#aab8c7;pointer-events:none; }
+
+
+#stage:fullscreen #focusFab,
+#stage:-webkit-full-screen #focusFab {
+  display:grid!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  z-index:9999!important;
+}
+body.focus-mode #stage:fullscreen #focusFab,
+body.focus-mode #stage:-webkit-full-screen #focusFab {
+  display:grid!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  opacity:.82!important;
+}
+
+@media (max-width:760px) {
+  #topbar{top:7px;left:7px;right:7px}.brand-sub,.text-label{display:none}.brand,.controls{padding:7px}.status-pill{padding:6px 7px}
+  #dashboard{top:60px;right:7px;width:calc(100vw - 14px)}
+  #keyboardPanel{bottom:7px;width:calc(100vw - 12px);padding:7px}.key{min-width:25px;height:36px;font-size:11px}.kb-row{gap:3px;margin-top:3px}
+  .fn-row{overflow-x:auto}.fn-row .key{min-width:44px;flex:0 0 44px}
+}
+
+.audio-select-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:9px}
+.audio-select{width:100%;min-width:0;height:42px;border:1px solid var(--border);border-radius:10px;background:#111823;color:var(--text);padding:0 10px;outline:none;font-size:14px}
+.audio-select:focus{border-color:var(--accent)}
+.audio-source-detail{margin-top:7px;color:var(--muted);font-size:10px;line-height:1.4;word-break:break-all}
+
+@media (max-width:900px){
+  .text-label,.brand-sub{display:none!important}
+  .brand{max-width:44vw}.controls{max-width:54vw;overflow-x:auto;scrollbar-width:none}.controls::-webkit-scrollbar{display:none}
+  .icon-btn{min-width:42px;height:42px;padding:0 9px;flex:0 0 auto}
+}
+@media (max-width:620px){
+  #topbar{top:6px;left:6px;right:6px;gap:6px}
+  .brand,.controls{padding:6px;border-radius:13px}.brand-title{font-size:12px}.status-pill{font-size:0;padding:6px;margin-left:0}
+  #dashboard{top:auto;left:6px;right:6px;bottom:64px;width:auto;max-height:62%;overflow:auto;border-radius:16px}
+  .grid{gap:7px;padding:8px}.card{padding:9px;min-height:66px}.value{font-size:16px}
+  #keyboardPanel{left:6px;right:6px;bottom:6px;width:auto;transform:none;max-height:58%;overflow:auto;padding:7px;border-radius:15px}
+  #keyboardPanel.hidden{transform:translateY(14px)}
+  .kb-row{gap:3px;margin-top:3px}.key{min-width:28px;height:38px;font-size:11px;padding:0 3px}.fn-row{overflow-x:auto}
+}
+@media (max-width:380px){
+  .brand-title{display:none}.brand{padding:6px}.grid{grid-template-columns:1fr}.card.full{grid-column:auto}
+  .controls{max-width:calc(100vw - 60px)}
+}
+@media (orientation:landscape) and (max-height:500px){
+  #dashboard{top:60px;right:6px;left:auto;bottom:auto;width:min(360px,48vw);max-height:calc(100% - 66px)}
+  #keyboardPanel{max-height:76%}.key{height:34px}.fn-row{display:none}
+}
+
+
+/* v8: usable narrow-screen toolbar, safe areas, scrollable panels and accessible focus. */
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button:disabled{opacity:.45;cursor:not-allowed}
+#dashboard{max-height:calc(100% - 86px);overflow:auto}
+#keyboardPanel{max-height:calc(100% - 95px);overflow:auto}
+#demoBadge{position:absolute;z-index:90;bottom:max(10px,env(safe-area-inset-bottom));left:12px;padding:7px 11px;border:1px solid #74d9c44d;border-radius:8px;background:#0b1927ed;color:#a7eedf;font-size:11px;letter-spacing:.03em;pointer-events:none}
+#hint{max-width:calc(100% - 28px);text-align:center;width:max-content}
+#toast{max-width:calc(100% - 24px);text-align:center}
+@media(max-width:620px){
+  #topbar{display:grid;grid-template-columns:minmax(0,1fr);justify-content:stretch;gap:5px;top:max(6px,env(safe-area-inset-top));}
+  .brand{max-width:none;width:100%;justify-content:flex-start;padding:7px 9px}
+  .brand-title{display:block!important;font-size:13px}.status-pill{margin-left:auto;font-size:11px}
+  .controls{max-width:none;width:100%;justify-content:space-between;gap:4px;overflow-x:auto;padding:6px}
+  .icon-btn{min-width:36px;height:38px;padding:0 8px}
+  #dashboard{bottom:46px;max-height:calc(100% - 160px)}
+  #keyboardPanel{bottom:46px;max-height:calc(100% - 160px)}
+  .key{min-width:0;flex:1 1 0;padding:0 1px;font-size:10px;height:37px}
+  .key.wide{flex:1.5 1 0}.key.enter{flex:1.8 1 0}.key.space{flex:3 1 0}
+  .kb-row{gap:3px}.fn-row .key{min-width:38px;flex:0 0 38px}
+  #demoBadge{font-size:10px;left:7px;bottom:max(7px,env(safe-area-inset-bottom))}
+  #hint{bottom:48px;font-size:11px}
+}
+@media(max-width:380px){.grid{grid-template-columns:1fr 1fr}.card.full{grid-column:1/-1}.brand-title{display:block}.controls{max-width:none}}
+@media(orientation:landscape) and (max-height:500px){#dashboard{max-height:calc(100% - 76px)}#keyboardPanel{bottom:38px;max-height:calc(100% - 116px)}}
+
+</style>
+</head>
+<body>
+<div id="stage">
+  <iframe title="Remote desktop video" id="video" src="__STREAM_URL__" allow="autoplay; fullscreen" referrerpolicy="same-origin"></iframe>
+  <div id="capture" tabindex="0" aria-label="Remote display input surface"></div>
+
+  <div id="topbar">
+    <div class="brand glass">
+      <div class="logo">G</div>
+      <div><div class="brand-title">GNOME Web Display</div><div class="brand-sub">__WIDTH__ × __HEIGHT__ · v__VERSION__ · __USER__</div></div>
+      <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">Starting</span></div>
+    </div>
+    <div class="controls glass">
+      <button class="icon-btn" id="audioBtn" aria-label="Enable / mute system audio" title="Enable / mute system audio"><span id="audioIcon">🔇</span><span class="text-label">Audio</span></button>
+      <button class="icon-btn" id="keyboardBtn" aria-label="Virtual keyboard" title="Virtual keyboard"><span>⌨</span><span class="text-label">Keyboard</span></button>
+      <button class="icon-btn" id="controlBtn" aria-label="Pause remote input" title="Pause remote input"><span>⌁</span><span class="text-label">Control</span></button>
+      <button class="icon-btn" id="dashboardBtn" aria-label="Statistics" title="Statistics"><span>▦</span><span class="text-label">Stats</span></button>
+      <button class="icon-btn" id="fullscreenBtn" aria-label="Fullscreen" title="Fullscreen"><span id="fullscreenIcon">⛶</span><span class="text-label">Fullscreen</span></button>
+      <button class="icon-btn" id="reconnectBtn" aria-label="Reconnect video" title="Reconnect video"><span>↻</span><span class="text-label">Reconnect</span></button>
+      <button class="icon-btn" id="logoutBtn" aria-label="Sign out" title="Sign out">⇥</button>
+    </div>
+  </div>
+
+  <aside id="dashboard" class="glass">
+    <div class="dash-head"><div><div class="dash-title">Live dashboard</div><div class="dash-caption">GNOME · PipeWire · WebRTC</div></div><button class="icon-btn" id="closeDash" aria-label="Close statistics">×</button></div>
+    <div class="grid">
+      <div class="card"><div class="label">Resolution</div><div class="value" id="resolutionStat">—</div><div class="subvalue" id="fpsStat">—</div></div>
+      <div class="card"><div class="label">Latency</div><div class="value" id="latencyStat">—</div><div class="subvalue">control RTT</div></div>
+      <div class="card"><div class="label">PipeWire</div><div class="value" id="nodeStat">—</div><div class="subvalue">virtual node</div></div>
+      <div class="card"><div class="label">Video bitrate</div><div class="value" id="bitrateStat">—</div><div class="subvalue">H.264 target</div></div>
+      <div class="card"><div class="label">Cursor</div><div class="value" id="cursorStat">Visible</div><div class="subvalue">GNOME cursor embedded in stream</div></div>
+      <div class="card"><div class="label">Input</div><div class="value" id="inputRateStat">0/s</div><div class="subvalue" id="inputTotalStat">0 total</div></div>
+      <div class="card full">
+        <div class="label">Audio source</div>
+        <div class="audio-select-row">
+          <select id="audioSourceSelect" aria-label="Audio source" class="audio-select"><option value="">Loading audio sources…</option></select>
+          <button class="icon-btn" id="refreshAudioBtn" aria-label="Refresh audio sources" title="Refresh audio sources">↻</button>
+        </div>
+        <div class="audio-source-detail" id="audioSourceDetail">Detecting PipeWire/Pulse sources…</div>
+        <div class="volume-row"><span>🔈</span><input id="volumeSlider" aria-label="Audio volume" type="range" min="0" max="100" value="80"><span id="volumeValue">80%</span></div>
+      </div>
+      <div class="card full">
+        <div class="label">Connections</div>
+        <div class="connection-row"><div class="mini-status"><span class="dot" id="wsDot"></span>Control WebSocket</div><span id="wsState">connecting</span></div>
+        <div class="connection-row"><div class="mini-status"><span class="dot" id="healthDot"></span>Server</div><span id="healthState">checking</span></div>
+        <div class="connection-row"><div class="mini-status"><span class="dot" id="gstDot"></span>GStreamer</div><span id="gstState">checking</span></div>
+        <div class="connection-row"><div class="mini-status"><span class="dot good"></span>Authentication</div><span>protected</span></div>
+      </div>
+      <div class="card full"><div class="label">Session</div><div class="connection-row"><span>Uptime</span><span id="uptimeStat">—</span></div><div class="connection-row"><span>Focus mode</span><span>drag/click floating ◉</span></div></div>
+    </div>
+  </aside>
+
+  <section id="keyboardPanel" class="glass hidden" aria-label="Virtual keyboard">
+    <div class="kb-head">
+      <input id="mobileInput" aria-label="Send text using your native keyboard" placeholder="Type with your phone’s keyboard…" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="icon-btn" id="closeKeyboard" aria-label="Close keyboard">×</button>
+    </div>
+    <div class="kb-row fn-row">
+      <button class="key" data-key="Escape">Esc</button><button class="key" data-key="F1">F1</button><button class="key" data-key="F2">F2</button><button class="key" data-key="F3">F3</button><button class="key" data-key="F4">F4</button><button class="key" data-key="F5">F5</button><button class="key" data-key="F6">F6</button><button class="key" data-key="F7">F7</button><button class="key" data-key="F8">F8</button><button class="key" data-key="F9">F9</button><button class="key" data-key="F10">F10</button><button class="key" data-key="F11">F11</button><button class="key" data-key="F12">F12</button>
+    </div>
+    <div class="kb-row"><button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button><button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button><button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button><button class="key" data-key="0">0</button><button class="key wide" data-key="Backspace">⌫</button></div>
+    <div class="kb-row"><button class="key" data-key="q">Q</button><button class="key" data-key="w">W</button><button class="key" data-key="e">E</button><button class="key" data-key="r">R</button><button class="key" data-key="t">T</button><button class="key" data-key="y">Y</button><button class="key" data-key="u">U</button><button class="key" data-key="i">I</button><button class="key" data-key="o">O</button><button class="key" data-key="p">P</button></div>
+    <div class="kb-row"><button class="key wide mod" data-key="CapsLock">Caps</button><button class="key" data-key="a">A</button><button class="key" data-key="s">S</button><button class="key" data-key="d">D</button><button class="key" data-key="f">F</button><button class="key" data-key="g">G</button><button class="key" data-key="h">H</button><button class="key" data-key="j">J</button><button class="key" data-key="k">K</button><button class="key" data-key="l">L</button><button class="key enter" data-key="Enter">Enter</button></div>
+    <div class="kb-row"><button class="key wide mod sticky" data-key="Shift">Shift</button><button class="key" data-key="z">Z</button><button class="key" data-key="x">X</button><button class="key" data-key="c">C</button><button class="key" data-key="v">V</button><button class="key" data-key="b">B</button><button class="key" data-key="n">N</button><button class="key" data-key="m">M</button><button class="key" data-key=",">,</button><button class="key" data-key=".">.</button><button class="key" data-key="/">/</button></div>
+    <div class="kb-row"><button class="key wide mod sticky" data-key="Control">Ctrl</button><button class="key wide mod sticky" data-key="Alt">Alt</button><button class="key wide mod sticky" data-key="Meta">Super</button><button class="key space" data-key=" ">Space</button><button class="key" data-key="ArrowLeft">←</button><button class="key" data-key="ArrowUp">↑</button><button class="key" data-key="ArrowDown">↓</button><button class="key" data-key="ArrowRight">→</button><button class="key" data-key="Delete">Del</button></div>
+  </section>
+
+  <div id="hint">Click the desktop to control it · drag ◉ anywhere · click ◉ for Focus mode</div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="demoBadge" hidden>DEMO · UI preview · no live desktop</div>
+
+  <button id="focusFab" aria-label="Drag to move · click to toggle Focus mode" title="Drag to move · click to toggle Focus mode" >
+    <span class="focus-icon">◉</span><span class="focus-mini">FOCUS</span>
+  </button>
+</div>
+
+<script>
+const W=__WIDTH__, H=__HEIGHT__, DEMO=__DEMO__;
+const stage=document.getElementById('stage'), cap=document.getElementById('capture'), videoFrame=document.getElementById('video');
+const dashboard=document.getElementById('dashboard'), keyboardPanel=document.getElementById('keyboardPanel'), mobileInput=document.getElementById('mobileInput');
+const focusFab=document.getElementById('focusFab'), hint=document.getElementById('hint'), toast=document.getElementById('toast');
+const statusDot=document.getElementById('statusDot'), statusText=document.getElementById('statusText');
+const wsDot=document.getElementById('wsDot'), healthDot=document.getElementById('healthDot'), gstDot=document.getElementById('gstDot');
+const audioSourceSelect=document.getElementById('audioSourceSelect'), audioSourceDetail=document.getElementById('audioSourceDetail');
+let ws=null,reconnectTimer=null,controlEnabled=true,loggingOut=false,inputTotal=0,inputThisSecond=0,audioMuted=true,audioSwitching=false;
+
+function setDot(el,state){el.classList.remove('good','bad');if(state==='good')el.classList.add('good');if(state==='bad')el.classList.add('bad');}
+function showToast(t){toast.textContent=t;toast.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove('show'),1500);}
+function send(o){if(!controlEnabled&&!['ping','release'].includes(o.type))return;if(ws&&ws.readyState===WebSocket.OPEN){ws.send(JSON.stringify(o));if(o.type!=='ping'){inputTotal++;inputThisSecond++;}}}
+function refreshOverall(){
+  if(DEMO){setDot(statusDot,'warn');statusText.textContent='Demo';return;}
+  const connected=ws&&ws.readyState===WebSocket.OPEN;
+  const hostOk=healthDot.classList.contains('good')&&gstDot.classList.contains('good');
+  const video=innerVideo();
+  if(connected&&hostOk&&video&&video.readyState>=2&&video.videoWidth>0){setDot(statusDot,'good');statusText.textContent='Streaming';}
+  else if(connected&&hostOk){setDot(statusDot,'warn');statusText.textContent='Waiting for video';}
+  else if(!connected&&!healthDot.classList.contains('good')){setDot(statusDot,'bad');statusText.textContent='Offline';}
+  else{setDot(statusDot,'warn');statusText.textContent='Connecting';}
+}
+
+
+function connectWS(){const proto=location.protocol==='https:'?'wss:':'ws:';ws=new WebSocket(`${proto}//${location.host}/ws`);ws.addEventListener('open',()=>{setDot(wsDot,'good');document.getElementById('wsState').textContent='connected';refreshOverall();});ws.addEventListener('close',()=>{setDot(wsDot,'bad');document.getElementById('wsState').textContent='disconnected';refreshOverall();clearTimeout(reconnectTimer);if(!loggingOut)reconnectTimer=setTimeout(connectWS,1400);});ws.addEventListener('message',e=>{try{const m=JSON.parse(e.data);if(m.type==='pong'&&m.ts!==undefined)document.getElementById('latencyStat').textContent=DEMO?'Preview':`${Math.max(0,Math.round(performance.now()-m.ts))} ms`;}catch{}});}
+connectWS();
+
+function fmtUptime(sec){sec=Math.max(0,Number(sec)||0);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return h?`${h}h ${m}m`:m?`${m}m ${s}s`:`${s}s`;}
+async function pollHealth(){try{const r=await fetch('/health',{cache:'no-store'});if(r.status===401){location.href='/login';return;}if(!r.ok)throw 0;const h=await r.json();document.getElementById('resolutionStat').textContent=`${h.width}×${h.height}`;document.getElementById('fpsStat').textContent=`${h.fps} fps target`;document.getElementById('nodeStat').textContent=h.pipewire_node??'—';document.getElementById('bitrateStat').textContent=h.bitrate_kbps?`${(h.bitrate_kbps/1000).toFixed(1)} Mb/s`:'—';document.getElementById('uptimeStat').textContent=fmtUptime(h.uptime_seconds);document.getElementById('cursorStat').textContent=h.cursor_mode==='embedded'?'Visible':'Hidden';if(!audioSwitching&&audioSourceSelect.options.length>1)audioSourceSelect.value=h.audio_source||'off';setDot(healthDot,'good');document.getElementById('healthState').textContent='healthy';if(h.demo){setDot(gstDot,'warn');document.getElementById('gstState').textContent='not used in demo';document.getElementById('nodeStat').textContent='Not used';document.getElementById('cursorStat').textContent='Preview';}else if(h.gstreamer_running){setDot(gstDot,'good');document.getElementById('gstState').textContent='streaming';}else{setDot(gstDot,'bad');document.getElementById('gstState').textContent='stopped';}}catch{setDot(healthDot,'bad');setDot(gstDot,'bad');document.getElementById('healthState').textContent='unreachable';document.getElementById('gstState').textContent='unknown';}refreshOverall();}
+pollHealth();setInterval(pollHealth,2000);
+setInterval(()=>{document.getElementById('inputRateStat').textContent=`${inputThisSecond}/s`;document.getElementById('inputTotalStat').textContent=`${inputTotal.toLocaleString()} total`;inputThisSecond=0;if(ws&&ws.readyState===WebSocket.OPEN)send({type:'ping',ts:performance.now()});},1000);
+
+
+async function loadAudioSources(showMessage=false){
+  audioSourceSelect.disabled=true;
+  try{
+    const r=await fetch('/api/audio-sources',{cache:'no-store'});
+    if(r.status===401){location.href='/login';return;}
+    const data=await r.json();
+    if(!r.ok||!data.ok)throw new Error(data.error||'Unable to list audio sources');
+    audioSourceSelect.replaceChildren();
+    const off=document.createElement('option');off.value='off';off.textContent='Off — video only';audioSourceSelect.appendChild(off);
+    for(const item of data.sources){const o=document.createElement('option');o.value=item.id;o.textContent=`${item.label} — ${item.name}`;audioSourceSelect.appendChild(o);}
+    audioSourceSelect.value=data.current||'off';
+    const current=data.sources.find(x=>x.id===data.current);
+    audioSourceDetail.textContent=DEMO?'Preview only: no audio hardware is used.':current?`${current.label}: ${current.name}`:'Audio disabled — video only';
+    if(showMessage)showToast(`Found ${data.sources.length} audio source${data.sources.length===1?'':'s'}`);
+  }catch(e){audioSourceDetail.textContent=`Audio source error: ${e.message}`;showToast('Could not load audio sources');}
+  finally{audioSourceSelect.disabled=DEMO;}
+}
+
+function reloadStream(){const u=new URL(videoFrame.src,location.href);u.searchParams.set('_gwd',Date.now().toString());videoFrame.src=u.pathname+u.search;}
+
+async function switchAudioSource(){
+  if(audioSwitching)return;
+  audioSwitching=true;audioSourceSelect.disabled=true;document.getElementById('refreshAudioBtn').disabled=true;
+  const wanted=audioSourceSelect.value;audioSourceDetail.textContent='Switching audio source…';showToast('Restarting audio stream…');
+  try{
+    const r=await fetch('/api/audio-source',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({source:wanted})});
+    const data=await r.json();if(!r.ok||!data.ok)throw new Error(data.error||'Audio switch failed');
+    if(data.changed)setTimeout(()=>{reloadStream();loadAudioSources(false);},Number(data.reload_delay_ms)||1000);
+    showToast(wanted==='off'?'Audio disabled':'Audio source changed');
+  }catch(e){showToast(e.message||'Audio switch failed');await loadAudioSources(false);}
+  finally{audioSwitching=false;audioSourceSelect.disabled=DEMO;document.getElementById('refreshAudioBtn').disabled=false;}
+}
+audioSourceSelect.addEventListener('change',switchAudioSource);
+document.getElementById('refreshAudioBtn').addEventListener('click',()=>loadAudioSources(true));
+loadAudioSources(false);
+
+function coords(ev){const r=cap.getBoundingClientRect(),scale=Math.min(r.width/W,r.height/H),vw=W*scale,vh=H*scale,ox=(r.width-vw)/2,oy=(r.height-vh)/2;return{x:Math.max(0,Math.min(W-1,(ev.clientX-r.left-ox)/scale)),y:Math.max(0,Math.min(H-1,(ev.clientY-r.top-oy)/scale))};}
+let activePointer=null, pendingMove=null, moveFrame=null;
+cap.addEventListener('pointermove',e=>{
+  if(e.pointerType==='touch'&&e.pointerId!==activePointer)return;
+  pendingMove=coords(e);
+  if(moveFrame===null)moveFrame=requestAnimationFrame(()=>{moveFrame=null;if(pendingMove)send({type:'move',...pendingMove});pendingMove=null;});
+});
+cap.addEventListener('pointerdown',e=>{
+  if(activePointer!==null&&e.pointerId!==activePointer)return;
+  activePointer=e.pointerId;cap.setPointerCapture(e.pointerId);cap.focus();hint.classList.add('fade');
+  send({type:'move',...coords(e)});send({type:'button',button:e.button,down:true});e.preventDefault();
+});
+cap.addEventListener('pointerup',e=>{
+  if(e.pointerId!==activePointer)return;
+  send({type:'button',button:e.button,down:false});activePointer=null;e.preventDefault();
+});
+cap.addEventListener('pointercancel',()=>{activePointer=null;releaseInputs();});
+cap.addEventListener('lostpointercapture',()=>{activePointer=null;releaseInputs();});
+cap.addEventListener('contextmenu',e=>e.preventDefault());
+cap.addEventListener('wheel',e=>{send({type:'wheel',dx:e.deltaX,dy:e.deltaY});e.preventDefault();},{passive:false});
+
+function shouldIgnoreKeyboardEvent(e){return e.target===mobileInput||e.target?.tagName==='INPUT'||e.target?.tagName==='TEXTAREA'||e.target?.tagName==='SELECT'||(e.target?.closest('button')&&document.activeElement!==cap);}
+window.addEventListener('keydown',e=>{if(!controlEnabled||shouldIgnoreKeyboardEvent(e))return;send({type:'key',key:e.key,down:true});if(e.key!=='F11'&&e.key!=='Escape')e.preventDefault();},true);
+window.addEventListener('keyup',e=>{if(!controlEnabled||shouldIgnoreKeyboardEvent(e))return;send({type:'key',key:e.key,down:false});if(e.key!=='F11'&&e.key!=='Escape')e.preventDefault();},true);
+
+function tapKey(key){send({type:'key',key,down:true});setTimeout(()=>send({type:'key',key,down:false}),35);}
+const stickyMods=new Set();
+function releaseInputs(){
+  send({type:'release'});stickyMods.clear();document.querySelectorAll('.key.sticky').forEach(b=>b.classList.remove('active'));
+}
+window.addEventListener('blur',releaseInputs);
+window.addEventListener('pagehide',releaseInputs);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseInputs();});
+document.querySelectorAll('.key').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();const key=btn.dataset.key;if(!key)return;if(btn.classList.contains('sticky')){if(stickyMods.has(key)){stickyMods.delete(key);btn.classList.remove('active');send({type:'key',key,down:false});}else{stickyMods.add(key);btn.classList.add('active');send({type:'key',key,down:true});}return;}tapKey(key);}));
+let composing=false;
+function sendText(text){for(let i=0;i<Array.from(text).length;i+=256)send({type:'text',text:Array.from(text).slice(i,i+256).join('')});}
+mobileInput.addEventListener('compositionstart',()=>{composing=true;});
+mobileInput.addEventListener('compositionend',e=>{composing=false;if(e.data)sendText(e.data);mobileInput.value='';});
+mobileInput.addEventListener('beforeinput',e=>{
+  if(composing||e.isComposing||e.inputType==='insertFromComposition')return;
+  if(e.inputType==='deleteContentBackward'){tapKey('Backspace');e.preventDefault();return;}
+  if(e.inputType==='insertLineBreak'){tapKey('Enter');e.preventDefault();return;}
+  if(e.data){sendText(e.data);e.preventDefault();mobileInput.value='';}
+});
+mobileInput.addEventListener('input',()=>{if(!composing&&mobileInput.value){sendText(mobileInput.value);mobileInput.value='';}});
+
+function innerVideo(){try{return videoFrame.contentDocument?.querySelector('video')||null;}catch{return null;}}
+function applyAudio(){const v=innerVideo();if(!v)return false;v.muted=audioMuted;v.volume=Number(document.getElementById('volumeSlider').value)/100;if(!audioMuted)v.play().catch(()=>{});return true;}
+videoFrame.addEventListener('load',()=>setTimeout(applyAudio,300));
+document.getElementById('audioBtn').addEventListener('click',()=>{if(DEMO){showToast('Preview only: no audio is captured');return;}audioMuted=!audioMuted;document.getElementById('audioIcon').textContent=audioMuted?'🔇':'🔊';document.getElementById('audioBtn').classList.toggle('active',!audioMuted);if(applyAudio())showToast(audioMuted?'System audio muted':'System audio enabled');else showToast('Stream is still loading');});
+document.getElementById('volumeSlider').addEventListener('input',e=>{document.getElementById('volumeValue').textContent=`${e.target.value}%`;applyAudio();});
+
+document.getElementById('keyboardBtn').addEventListener('click',()=>{const opening=keyboardPanel.classList.contains('hidden');keyboardPanel.classList.toggle('hidden');document.getElementById('keyboardBtn').classList.toggle('active',opening);if(opening){if(innerWidth<=620)dashboard.classList.add('hidden');mobileInput.focus();}else cap.focus();});
+document.getElementById('closeKeyboard').addEventListener('click',()=>{keyboardPanel.classList.add('hidden');document.getElementById('keyboardBtn').classList.remove('active');cap.focus();});
+document.getElementById('controlBtn').addEventListener('click',()=>{releaseInputs();controlEnabled=!controlEnabled;document.getElementById('controlBtn').classList.toggle('active',controlEnabled);showToast(controlEnabled?'Remote control enabled':'Remote control paused');if(controlEnabled)cap.focus();});
+document.getElementById('dashboardBtn').addEventListener('click',()=>{const opening=dashboard.classList.contains('hidden');dashboard.classList.toggle('hidden');if(opening&&innerWidth<=620){keyboardPanel.classList.add('hidden');document.getElementById('keyboardBtn').classList.remove('active');}});
+document.getElementById('closeDash').addEventListener('click',()=>dashboard.classList.add('hidden'));
+document.getElementById('logoutBtn').addEventListener('click',async()=>{releaseInputs();loggingOut=true;clearTimeout(reconnectTimer);try{const r=await fetch('/logout',{method:'POST'});if(!r.ok)throw new Error('Sign-out failed');ws?.close();location.href='/login';}catch{loggingOut=false;showToast('Sign-out failed; check your connection');}});
+
+document.getElementById('reconnectBtn').addEventListener('click',()=>{reloadStream();pollHealth();showToast(DEMO?'Preview reloaded':'Reconnecting video...');});
+
+document.getElementById('fullscreenBtn').addEventListener('click',async()=>{try{if(!document.fullscreenElement){await stage.requestFullscreen();showToast('Fullscreen enabled');}else await document.exitFullscreen();}catch{showToast('Fullscreen request blocked');}});
+document.addEventListener('fullscreenchange',()=>{
+  document.getElementById('fullscreenIcon').textContent=document.fullscreenElement?'⤢':'⛶';
+  requestAnimationFrame(()=>{
+    const c=clampFab(focusFab.offsetLeft,focusFab.offsetTop);
+    focusFab.style.left=`${c.x}px`;
+    focusFab.style.top=`${c.y}px`;
+  });
+});
+
+// Draggable persistent Focus button. Drag moves it; click toggles chrome/UI visibility.
+let fabDrag=false,fabMoved=false,startX=0,startY=0,startL=0,startT=0;
+function clampFab(x,y){const r=stage.getBoundingClientRect();return{x:Math.max(6,Math.min(r.width-focusFab.offsetWidth-6,x)),y:Math.max(6,Math.min(r.height-focusFab.offsetHeight-6,y))};}
+function loadFab(){try{const p=JSON.parse(localStorage.getItem('gwd-focus-pos')||'null');if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)){const c=clampFab(p.x,p.y);focusFab.style.left=`${c.x}px`;focusFab.style.top=`${c.y}px`;return;}}catch{}focusFab.style.left=innerWidth<=620?`${Math.max(8,stage.clientWidth-64)}px`:'16px';focusFab.style.top=innerWidth<=620?'124px':`${Math.max(80,stage.clientHeight-92)}px`;}
+function toggleFocus(){document.body.classList.toggle('focus-mode');const on=document.body.classList.contains('focus-mode');focusFab.querySelector('.focus-icon').textContent=on?'◎':'◉';focusFab.querySelector('.focus-mini').textContent=on?'SHOW':'FOCUS';showToast(on?'Focus mode: controls hidden':'Controls restored');cap.focus();}
+focusFab.addEventListener('pointerdown',e=>{fabDrag=true;fabMoved=false;focusFab.classList.add('dragging');focusFab.setPointerCapture(e.pointerId);startX=e.clientX;startY=e.clientY;startL=focusFab.offsetLeft;startT=focusFab.offsetTop;e.preventDefault();});
+focusFab.addEventListener('pointermove',e=>{if(!fabDrag)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.hypot(dx,dy)>5)fabMoved=true;const c=clampFab(startL+dx,startT+dy);focusFab.style.left=`${c.x}px`;focusFab.style.top=`${c.y}px`;});
+focusFab.addEventListener('pointerup',e=>{if(!fabDrag)return;fabDrag=false;focusFab.classList.remove('dragging');const p={x:focusFab.offsetLeft,y:focusFab.offsetTop};try{localStorage.setItem('gwd-focus-pos',JSON.stringify(p));}catch{}if(!fabMoved)toggleFocus();e.preventDefault();});
+window.addEventListener('resize',()=>{const c=clampFab(focusFab.offsetLeft,focusFab.offsetTop);focusFab.style.left=`${c.x}px`;focusFab.style.top=`${c.y}px`;});
+focusFab.addEventListener('pointercancel',()=>{fabDrag=false;focusFab.classList.remove('dragging');});
+loadFab();
+
+document.getElementById('controlBtn').classList.add('active');
+if(innerWidth<=620)dashboard.classList.add('hidden');
+if(DEMO)document.getElementById('demoBadge').hidden=false;
+if(!DEMO&&!window.RTCPeerConnection)showToast('This browser does not provide WebRTC. Try a current Chrome or Chromium browser.');
+setInterval(refreshOverall,1000);
+cap.focus();setTimeout(()=>hint.classList.add('fade'),6500);
+</script>
+</body>
+</html>

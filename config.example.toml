@@ -1,0 +1,39 @@
+# Copy to config.toml. Environment variables override these settings.
+# This file is parsed as TOML; it is NEVER executed as a shell script.
+[display]
+width = 1920
+height = 1080
+fps = 60
+bitrate_kbps = 6000
+
+[audio]
+# auto = default system-output monitor, off = video only.
+# A source name from `pactl list short sources` is also accepted.
+source = "auto"
+bitrate_bps = 128000
+
+[server]
+host = "0.0.0.0"
+port = 8090
+stream_name = "monitor"
+# Explicit origin only when using a reverse proxy. No trailing slash.
+public_origin = ""
+# Optional native HTTPS. Supply a certificate trusted by your client devices.
+tls_cert = ""
+tls_key = ""
+
+[network]
+# Leave empty for auto-detection / an interactive interface picker.
+advertised_ip = ""
+interface = ""
+
+[mediamtx]
+# Pinned version; changing it requires compatibility testing.
+image = "bluenviron/mediamtx:1.21.0"
+
+[auth]
+username = "display"
+# Empty = prompt on every launch (recommended). Never commit real secrets.
+# An optional UTF-8 file must belong to you and have mode 600.
+password_file = ""
+session_hours = 12

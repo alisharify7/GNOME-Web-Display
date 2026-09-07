@@ -1,0 +1,24 @@
+# MediaMTX 1.21.x. Mounted read-only by launcher.py (unlike v7.1).
+# Requires Docker Engine 28+ for localhost publishing isolation.
+# Host mappings, not these container-side addresses, restrict TCP listeners.
+logLevel: info
+rtsp: true
+rtspAddress: :8554
+rtspTransports: [tcp]
+webrtc: true
+webrtcAddress: :8889
+webrtcEncryption: false
+webrtcAllowOrigins: ["*"]
+webrtcLocalUDPAddress: :8189
+webrtcIPsFromInterfaces: false
+webrtcAdditionalHosts: []
+rtmp: false
+hls: false
+srt: false
+moq: false
+api: false
+metrics: false
+pprof: false
+playback: false
+paths:
+  all_others:
