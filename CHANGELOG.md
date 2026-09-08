@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1 - 2026-09-08
+
+### MediaMTX startup
+
+- Make the public bundled MediaMTX configuration readable before its read-only
+  Docker bind mount, including installs created under a restrictive umask.
+- Add regression coverage for a `0600` configuration file without weakening the
+  container's capability, privilege, or port-isolation settings.
+
 ## 2.0.0 - 2026-09-07 (prepared release; publication is separate)
 
 ### Version-selecting installer

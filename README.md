@@ -4,7 +4,7 @@
 
 ### Your browser. An extra screen for Linux.
 
-**Version 2.0.0** · Interactive installer · Version selection · Organized source tree
+**Version 2.0.1** · Interactive installer · Version selection · Organized source tree
 
 A **spacedesk-style alternative for GNOME on Wayland**: use a phone, tablet,
 laptop, or another computer as a browser-based extended display.
@@ -84,7 +84,7 @@ curl -fsSL https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/main/
 The URL must point to the **raw shell script**, not a GitHub HTML file page.
 This command downloads and executes code: use it only for a repository you trust.
 The `main` URL becomes available after the owner publishes this revision there.
-For a fixed bootstrap after the tag is published, replace `main` with `v2.0.0`.
+For a fixed bootstrap after the tag is published, replace `main` with `v2.0.1`.
 
 The installer reads version tags directly from Git, shows a menu, and clones the
 selected tag into its own directory. Enter an exact tag, a menu number, **`v1`**,
@@ -93,7 +93,7 @@ selected tag into its own directory. Enter an exact tag, a menu number, **`v1`**
 - **`latest`** selects the numerically highest stable version tag, not `main` and
   not GitHub's manually designated "Latest" release.
 - **`v1` / `v2`** select the highest stable version in that major series.
-- **`v2.0.0`** selects that exact tag. Prereleases require an explicit selection;
+- **`v2.0.1`** selects that exact tag. Prereleases require an explicit selection;
   they are never chosen by `latest` or a major-series alias.
 
 After choosing a version, select an action:
@@ -123,7 +123,7 @@ Installations are kept separately:
 ~/.local/share/gnome-web-display/
   versions/
     v1.0.0/
-    v2.0.0/
+    v2.0.1/
 ```
 
 A previously installed **clean** checkout of the same tag can be reused. Tracked
@@ -156,7 +156,7 @@ bash install.sh --list
 bash install.sh --version v2
 
 # Clone the exact release; no downloaded script is executed.
-bash install.sh --version v2.0.0 --download-only
+bash install.sh --version v2.0.1 --download-only
 
 # Clone and run source/package/runtime checks, without installing packages.
 bash install.sh --version latest --verify-only
@@ -180,7 +180,7 @@ For unattended use, provide `--version`, `--action`, and an absolute `--config`
 pointing to settings with a private password file and the intended network address:
 
 ```bash
-bash install.sh --version v2.0.0 --action all --yes --config "$HOME/.config/gnome-web-display/config.toml"
+bash install.sh --version v2.0.1 --action all --yes --config "$HOME/.config/gnome-web-display/config.toml"
 ```
 
 Without a controlling terminal, `sudo` must already be usable noninteractively or
@@ -189,11 +189,11 @@ Use `--help` or the [installer reference](docs/INSTALLER.md) for all options.
 
 ### Or clone the release yourself
 
-After `v2.0.0` has been published:
+After `v2.0.1` has been published:
 
 ```bash
-git clone --branch v2.0.0 --depth 1 https://github.com/alisharify7/GNOME-Web-Display.git GNOME-Web-Display-v2.0.0
-cd GNOME-Web-Display-v2.0.0
+git clone --branch v2.0.1 --depth 1 https://github.com/alisharify7/GNOME-Web-Display.git GNOME-Web-Display-v2.0.1
+cd GNOME-Web-Display-v2.0.1
 bash scripts/verify.sh --source-only
 bash setup.sh
 bash start.sh --doctor
@@ -553,7 +553,7 @@ GNOME-Web-Display/
   install.sh                 Standalone curl-friendly version/menu installer
   start.sh / setup.sh        Stable, thin entry points
   run.sh                     Compatibility alias for start.sh
-  VERSION                    Single source of truth: 2.0.0
+  VERSION                    Single source of truth: 2.0.1
   src/gnome_web_display/     Python application, launcher, settings and diagnostics
   web/                       Viewer, login and demo HTML/CSS/JavaScript
   config/                    Configuration example and MediaMTX defaults
@@ -567,7 +567,7 @@ GNOME-Web-Display/
 
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for architecture, configuration, API
 and contribution notes; [docs/INSTALLER.md](docs/INSTALLER.md) for installer behavior;
-and [CHANGELOG.md](CHANGELOG.md) for the v2.0.0 changes.
+and [CHANGELOG.md](CHANGELOG.md) for the v2 release changes.
 [docs/RELEASING.md](docs/RELEASING.md) describes publishing `main` and the version tag.
 The supplied repository's [LICENSE](LICENSE) is retained unchanged. Provenance and
 third-party notes are in [docs/LICENSE-NOTICE.md](docs/LICENSE-NOTICE.md).

@@ -85,7 +85,7 @@ test_noninteractive_setup_requires_explicit_consent (test_installer.InstallerTes
 test_only_prereleases_have_no_implicit_latest (test_installer.InstallerTests.test_only_prereleases_have_no_implicit_latest) ... ok
 test_pipe_menu_and_child_prompts_use_controlling_terminal (test_installer.InstallerTests.test_pipe_menu_and_child_prompts_use_controlling_terminal) ... ok
 test_prerelease_can_be_selected_explicitly (test_installer.InstallerTests.test_prerelease_can_be_selected_explicitly) ... ok
-test_root_install_is_rejected (test_installer.InstallerTests.test_root_install_is_rejected) ... ok
+test_root_install_is_rejected (test_installer.InstallerTests.test_root_install_is_rejected) ... skipped 'Only applicable in a root test container'
 test_server_exit_code_is_preserved (test_installer.InstallerTests.test_server_exit_code_is_preserved) ... ok
 test_start_action_never_calls_setup (test_installer.InstallerTests.test_start_action_never_calls_setup) ... ok
 test_symlink_destination_rejected (test_installer.InstallerTests.test_symlink_destination_rejected) ... ok
@@ -106,6 +106,8 @@ test_engine_query_failure_is_error (test_launcher.LauncherTests.test_engine_quer
 test_explicit_address_skips_discovery (test_launcher.LauncherTests.test_explicit_address_skips_discovery) ... ok
 test_explicit_yes_allows_consent (test_launcher.LauncherTests.test_explicit_yes_allows_consent) ... ok
 test_interface_filter (test_launcher.LauncherTests.test_interface_filter) ... ok
+test_mediamtx_config_is_container_readable (test_launcher.LauncherTests.test_mediamtx_config_is_container_readable) ... ok
+test_mediamtx_config_symlink_is_rejected (test_launcher.LauncherTests.test_mediamtx_config_symlink_is_rejected) ... ok
 test_modern_engine_accepted (test_launcher.LauncherTests.test_modern_engine_accepted) ... ok
 test_modern_engine_passes (test_launcher.LauncherTests.test_modern_engine_passes) ... ok
 test_no_shell_command_execution (test_launcher.LauncherTests.test_no_shell_command_execution) ... ok
@@ -114,6 +116,7 @@ test_noninteractive_consent_defaults_no (test_launcher.LauncherTests.test_nonint
 test_old_engine_rejected (test_launcher.LauncherTests.test_old_engine_rejected) ... ok
 test_privileged_engine_is_checked (test_launcher.LauncherTests.test_privileged_engine_is_checked) ... ok
 test_unknown_engine_rejected (test_launcher.LauncherTests.test_unknown_engine_rejected) ... ok
+test_unreadable_mediamtx_config_fails_cleanly (test_launcher.LauncherTests.test_unreadable_mediamtx_config_fails_cleanly) ... ok
 test_all_moved_files_exist (test_layout.LayoutTests.test_all_moved_files_exist) ... ok
 test_doctor_resolves_new_files (test_layout.LayoutTests.test_doctor_resolves_new_files) ... ok
 test_package_roots (test_layout.LayoutTests.test_package_roots) ... ok
@@ -123,9 +126,9 @@ test_start_wrapper_works_from_another_directory (test_layout.LayoutTests.test_st
 test_version_has_one_source_of_truth (test_layout.LayoutTests.test_version_has_one_source_of_truth) ... ok
 
 ----------------------------------------------------------------------
-Ran 120 tests in 7.459s
+Ran 123 tests in 4.111s
 
-OK
+OK (skipped=1)
 Network: wlan0 -> 192.0.2.2
 
 
@@ -135,7 +138,7 @@ PASS: SIGTERM cleanup returns 130 and closes the HTTP listener. No desktop or Do
 
 
 === Actual-source installer + HTTP smoke ===
-PASS: actual v2.0.0 source -> local Git annotated tag -> installer clone -> manifest -> demo startup.
+PASS: actual v2.0.1 source -> local Git annotated tag -> installer clone -> manifest -> demo startup.
 PASS: installed HTTP login and versioned demo health; SIGTERM exit 130 and listener cleanup.
 PASS: verifier rejects changed frontend source. No public network, APT, Docker or GNOME capture used.
 

@@ -1,6 +1,6 @@
 # GNOME Web Display — developer guide
 
-This document covers **v2.0.0**: the version-selecting installer and organized
+This document covers **v2.0.1**: the version-selecting installer and organized
 source layout. End-user installation belongs in [README.md](../README.md).
 
 The project is a small, single-host/single-monitor application, not a multi-tenant

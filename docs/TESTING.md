@@ -1,18 +1,18 @@
-# v2.0.0 validation report
+# v2.0.1 validation report
 
-Prepared on 2026-09-07 from the supplied GNOME-Web-Display source archive. These
-results describe this build environment, not a certified GNOME host or a published
-GitHub Actions run. The original packaging report and results are retained in
+Prepared on 2026-09-08 from the GNOME-Web-Display release checkout. These results
+describe this build environment, not a certified GNOME host or a published GitHub
+Actions run. The original packaging report and results are retained in
 [history](history/packaging-validation.md).
 
 ## Completed checks
 
 | Check | Result and scope |
 | --- | --- |
-| Python application/API suite | Original 73 tests pass after the package/path refactor |
-| Installer integration suite | 40 tests pass using real local Git repositories and isolated HOME directories; setup/start fixtures do not install system packages |
+| Python application/API suite | 76 tests pass, including restrictive MediaMTX config permissions, failure handling and symlink rejection |
+| Installer integration suite | 40 tests discovered using real local Git repositories and isolated HOME directories; 39 pass and the root-only refusal check is skipped as non-root |
 | Layout/version suite | 7 tests pass, including entry points launched from another working directory |
-| Total automated tests | 120 tests passed under Python 3.13 in this build environment |
+| Total automated tests | 123 tests run under Python 3.13: 122 passed and 1 root-only check skipped |
 | Shell parsing | Root and scripts/ Bash entry points parse with `bash -n` |
 | Direct demo startup | Real launcher, HTTP login/session/logout, health and SIGTERM cleanup pass without GNOME/Docker |
 | Offline browser UI | Real relocated templates render in Chromium; Focus/fullscreen/keyboard and responsive widths pass; six demo images regenerated |
@@ -35,9 +35,9 @@ calls; they never run APT, Docker or a real desktop capture.
 
 ## Environment limitations / not passed as live tests
 
-The public GitHub clone attempt could not resolve `github.com` in the container.
-A public curl installation must therefore be checked after the owner pushes the
-installer and tag. No public release, commit or tag was created by this build.
+Public curl installation and tag discovery must be checked after `v2.0.1` is pushed.
+The portable installer checks use a local fixture remote and do not claim that
+post-publication validation has already happened.
 
 The optional browser-navigation harness `tools/screenshots.py` reached a browser
 policy error (`net::ERR_BLOCKED_BY_ADMINISTRATOR`) when opening localhost. The policy
@@ -45,7 +45,7 @@ was not bypassed. Offline `page.set_content` checks passed, and separate Python 
 smoke tests passed; a live browser-driven login session was not validated here.
 
 No GNOME Wayland/Mutter monitor was created. Physical phones, real input/audio,
-Docker-backed MediaMTX delivery, APT package installation, administrator prompts
+Docker-backed MediaMTX delivery after this fix, APT package installation, administrator prompts
 against a real system, TLS on client devices, LAN isolation and hardware latency
 were not validated. Do not treat successful portable tests as a claim of support
 for a particular distribution/device or as a security/performance audit.

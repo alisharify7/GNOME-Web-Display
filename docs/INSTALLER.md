@@ -1,4 +1,4 @@
-# Installer reference (v2.0.0)
+# Installer reference (v2.0.1)
 
 `install.sh` is intentionally self-contained. It is the only substantial shell
 file kept at the root so a raw GitHub URL can bootstrap the complete project.

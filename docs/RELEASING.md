@@ -1,4 +1,4 @@
-# Publishing v2.0.0
+# Publishing v2.0.1
 
 This source package prepares a release. It does not push commits, tags or GitHub
 Releases. The curl command cannot serve this installer until `install.sh` is on
@@ -30,7 +30,7 @@ bash scripts/verify.sh --source-only
 bash start.sh --version
 ```
 
-`VERSION` must be `2.0.0`, and `start.sh --version` must agree. Update documentation
+`VERSION` must be `2.0.1`, and `start.sh --version` must agree. Update documentation
 and validation evidence before the final manifest generation. Do not modify a
 manifest-covered file after generating the manifest without regenerating it.
 Review `git status --short` and ensure there are no secrets or unintended artifacts.
@@ -43,15 +43,15 @@ Review the actual default branch/remotes in your checkout first. For this projec
 
 ```bash
 git add -A
-git commit -m "Release v2.0.0: interactive installer and organized source layout"
+git commit -m "Release v2.0.1: fix MediaMTX config permissions"
 git push origin main
-git tag -a v2.0.0 -m "GNOME Web Display v2.0.0"
-git push origin v2.0.0
+git tag -a v2.0.1 -m "GNOME Web Display v2.0.1"
+git push origin v2.0.1
 ```
 
-Do not force-move existing v1 or v2 tags. If `v2.0.0` already exists, choose a new
+Do not force-move existing v1 or v2 tags. If `v2.0.1` already exists, choose a new
 version and update VERSION/docs instead. Create the GitHub Release from the tag and
-use [releases/v2.0.0.md](releases/v2.0.0.md) for its description.
+use [releases/v2.0.1.md](releases/v2.0.1.md) for its description.
 
 ## Confirm public installation paths
 
@@ -60,13 +60,13 @@ Once the commit and tag are visible on GitHub, from a normal desktop terminal:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/main/install.sh -o /tmp/gwd-install.sh
 bash /tmp/gwd-install.sh --list
-bash /tmp/gwd-install.sh --version v2.0.0 --verify-only
+bash /tmp/gwd-install.sh --version v2.0.1 --verify-only
 ```
 
 The fixed bootstrap URL is:
 
 ```text
-https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/v2.0.0/install.sh
+https://raw.githubusercontent.com/alisharify7/GNOME-Web-Display/v2.0.1/install.sh
 ```
 
 Verify the list contains the intended tag and commit, then test the complete

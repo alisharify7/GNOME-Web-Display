@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shlex
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -109,6 +110,21 @@ def require_safe_docker(docker):
         raise LaunchError(issue + ' Upgrade Docker Engine to 28+; see README.md. No image or container was created.')
 
 
+def mediamtx_config_for_container():
+    """Make the public bundled config readable across Docker user namespaces."""
+    path = CONFIG_ROOT / 'mediamtx.yml'
+    try:
+        details = path.lstat()
+        if not stat.S_ISREG(details.st_mode):
+            raise LaunchError(f'Bundled MediaMTX config is not a regular file: {path}')
+        mode = stat.S_IMODE(details.st_mode)
+        if mode & 0o444 != 0o444:
+            path.chmod(mode | 0o444)
+    except OSError as exc:
+        raise LaunchError(f'Cannot make the bundled MediaMTX config readable: {path}. {exc}') from None
+    return path
+
+
 def wait_mediamtx(docker, container, seconds=20):
     deadline = time.monotonic() + seconds
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -205,10 +221,11 @@ def main():
             else:
                 print('Using cached MediaMTX image; no pull needed.')
             name = f'gnome-web-display-{os.getuid()}-{os.getpid()}'
+            media_config = mediamtx_config_for_container()
             # Create first, so even interrupted starts can clean up ONLY this instance.
             cmd = docker + ['create', '--name', name, '--label', 'app=gnome-web-display',
                 '--cap-drop=ALL', '--security-opt', 'no-new-privileges:true',
-                '--mount', f'type=bind,src={CONFIG_ROOT / "mediamtx.yml"},dst=/mediamtx.yml,readonly',
+                '--mount', f'type=bind,src={media_config},dst=/mediamtx.yml,readonly',
                 '-e', f'MTX_WEBRTCADDITIONALHOSTS={advertised}',
                 '-p', '127.0.0.1:8554:8554/tcp', '-p', '127.0.0.1:8889:8889/tcp',
                 '-p', '8189:8189/udp', cfg.mediamtx_image, '/mediamtx.yml']

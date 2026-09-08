@@ -1,4 +1,7 @@
 import _bootstrap  # noqa: F401
+from pathlib import Path
+import stat
+from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
@@ -8,6 +11,39 @@ from gnome_web_display.settings import Settings
 
 
 class LauncherTests(unittest.TestCase):
+    def test_mediamtx_config_is_container_readable(self):
+        with TemporaryDirectory() as directory:
+            config = Path(directory, 'mediamtx.yml')
+            config.write_text('paths: {}\n')
+            config.chmod(0o600)
+            with patch.object(launcher, 'CONFIG_ROOT', config.parent):
+                self.assertEqual(launcher.mediamtx_config_for_container(), config)
+            self.assertEqual(stat.S_IMODE(config.stat().st_mode), 0o644)
+            self.assertEqual(config.read_text(), 'paths: {}\n')
+
+    def test_unreadable_mediamtx_config_fails_cleanly(self):
+        with TemporaryDirectory() as directory:
+            config = Path(directory, 'mediamtx.yml')
+            config.write_text('paths: {}\n')
+            config.chmod(0o600)
+            with patch.object(launcher, 'CONFIG_ROOT', config.parent), \
+                    patch.object(Path, 'chmod', side_effect=PermissionError('denied')):
+                with self.assertRaisesRegex(launcher.LaunchError, 'Cannot make.*readable'):
+                    launcher.mediamtx_config_for_container()
+
+    def test_mediamtx_config_symlink_is_rejected(self):
+        with TemporaryDirectory() as directory:
+            target = Path(directory, 'private')
+            target.write_text('do not expose\n')
+            target.chmod(0o600)
+            config_root = Path(directory, 'config')
+            config_root.mkdir()
+            Path(config_root, 'mediamtx.yml').symlink_to(target)
+            with patch.object(launcher, 'CONFIG_ROOT', config_root):
+                with self.assertRaisesRegex(launcher.LaunchError, 'not a regular file'):
+                    launcher.mediamtx_config_for_container()
+            self.assertEqual(stat.S_IMODE(target.stat().st_mode), 0o600)
+
     def test_old_engine_rejected(self):
         for version in ('20.10.24', '26.1.5+dfsg1', '27.5.1'):
             with self.subTest(version=version):
